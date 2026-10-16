@@ -9,7 +9,7 @@ window.WTG_CONFIG = {
     facebook: "https://www.facebook.com/share/1C38nJPyfz/",
     instagram: "https://www.instagram.com/waytogonj",
     tiktok: "",
-    linkedin: "https://www.linkedin.com/company/waytogonj",
+    linkedin: "https://www.linkedin.com/in/jay-fischer-79038b143",
     youtube: "",
     nextdoor: "",
     whatsapp: "https://wa.me/17326081939",
