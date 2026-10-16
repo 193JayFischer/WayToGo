@@ -77,7 +77,7 @@ ul.checks li::after {
 .cta-row small { color: var(--muted); }
 .badge { display: inline-block; background: #fff6bf; color: #6b5600; font-weight: 600; font-size: .85rem; padding: 4px 12px; border-radius: 999px; }
 footer { background: var(--navy); color: #bfc4cc; padding: 32px 0; font-size: .9rem; }
-footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px; align-items: flex-start; }
+footer .wrap { display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: flex-start; }
 footer a { color: #fff; }
 footer .contact { display: grid; gap: 4px; }
 footer .contact b { color: var(--yellow); }
@@ -137,3 +137,15 @@ footer .social { margin-top: 6px; }
 /* Social icons on light surfaces */
 .social.light a { background: #f0f3f8; border-color: var(--line); color: var(--ink); }
 .social.light a:hover { background: var(--yellow); color: #111; }
+
+/* Labeled social buttons (footer) */
+.social.buttons { gap: 10px; }
+.social.buttons a { width: auto; height: 40px; border-radius: 999px; padding: 0 16px 0 12px; display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: .9rem; background: #fff; color: var(--ink); border: 0; }
+.social.buttons a:hover { background: var(--yellow); color: #111; }
+.social.buttons .lbl { white-space: nowrap; }
+footer .social.buttons { grid-column: 1 / -1; width: 100%; margin-top: 10px; padding-top: 18px; border-top: 1px solid rgba(255,255,255,.12); }
+.social.buttons a[hidden] { display: none; }
+@media (max-width: 680px) {
+  footer .wrap { grid-template-columns: 1fr; }
+  footer { padding-bottom: 96px; }
+}
