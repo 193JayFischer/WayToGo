@@ -245,7 +245,7 @@
       <div class="tablewrap"><table>
         <thead><tr><th>Day</th><th>Morning (after AM routes)</th><th>Afternoon (before PM routes)</th></tr></thead>
         <tbody>
-          <tr><td>Monday</td><td>Refresh the Indeed post (edit the title or one line so it shows as updated). Post to the Facebook Page and Instagram from Business Suite.</td><td>Post in 3 Toms River, Lakewood, or Ocean County Facebook jobs and community groups.</td></tr>
+          <tr><td>Monday</td><td>Refresh the Indeed post (edit the title or one line so it shows as updated). Post to the Facebook Page and Instagram from Business Suite.</td><td>Post in 3 Lakewood, Toms River, or Jackson Facebook jobs and community groups.</td></tr>
           <tr><td>Tuesday</td><td>WhatsApp status and broadcast to the "Interested drivers" list. Check Indeed and ZipRecruiter candidates and text every new one.</td><td>Work the Leads tab: call everyone due today.</td></tr>
           <tr><td>Wednesday</td><td>Instagram Reel or photo (a bus, a driver, the yard). Same clip to Facebook.</td><td>Post in 3 different groups (Jackson, Howell, Brick, Manchester).</td></tr>
           <tr><td>Thursday</td><td>Referral reminder to current drivers (text template). Nextdoor and Google Business post.</td><td>Reply to every DM and comment. Update lead stages.</td></tr>
@@ -315,7 +315,7 @@ function waLink() { const n = (C('wa') || '').replace(/\D/g, ''); return n ? 'ht
 function contactLine() { const p = []; if (C('phone')) p.push('Call or text ' + C('phone') + (C('contact') ? ' (' + C('contact') + ')' : '')); p.push('Apply online: ' + APPLY_URL); if (waLink()) p.push('WhatsApp: ' + waLink()); if (C('email')) p.push('Email: ' + C('email')); return p.join('\n'); }
 function TPLS() { const bonus = C('bonus') ? C('bonus') + '\n' : ''; const b1 = C('bonus') ? ' ' + C('bonus') + '.' : ''; return [
   { k: 'indeed', title: 'Indeed / ZipRecruiter / LinkedIn job post', where: 'Full description. Title: School Bus Driver, Toms River NJ, Training Available', text:
-`WAY TO GO NJ LLC is hiring experienced and dependable CDL School Bus Drivers in Toms River, NJ. We are a growing school transportation company serving Ocean County and we need reliable people now.
+`WAY TO GO NJ LLC is hiring experienced and dependable CDL School Bus Drivers in Toms River, NJ. We are a growing school transportation company serving Lakewood and the surrounding areas, and we need reliable people now.
 
 PAY: ${C('pay')}
 ${bonus}HOURS: ${C('hours')}
@@ -349,13 +349,13 @@ Mornings and afternoons, home in between. Retirees, parents, CDL holders who wan
 ${waLink() ? '💬 WhatsApp: ' + waLink() : ''}
 
 Share this with someone who would be a great driver. 🙏
-#TomsRiver #LakewoodNJ #OceanCountyJobs #BusDriver #CDLJobs #NowHiring #JacksonNJ #HowellNJ #WayToGoNJ` },
+#LakewoodNJ #TomsRiver #OceanCountyJobs #BusDriver #CDLJobs #NowHiring #JacksonNJ #HowellNJ #WayToGoNJ` },
   { k: 'group', title: 'Facebook group post (short, community tone)', where: 'Local jobs and community groups. One group post a week each.', text:
 `Hi neighbors. Way To Go NJ (local school bus company, Toms River) is hiring CDL school bus drivers. ${C('pay')}. AM and PM routes, middle of the day free. ${C('cdl')} Great for retirees and parents. ${C('phone') ? 'Text ' + C('phone') : ''} or apply at ${APPLY_URL} and we will call you back the same day. Thanks for sharing!` },
   { k: 'ig', title: 'Instagram Reel / Story caption', where: 'Short clip of the bus or yard. Put the apply link in the bio.', text:
-`We need drivers. Toms River and Ocean County. ${C('pay')}. Mornings and afternoons only. ${C('cdl')}
+`We need drivers. Lakewood, Toms River and the surrounding areas. ${C('pay')}. Mornings and afternoons only. ${C('cdl')}
 Tap the link in bio or DM us "DRIVER" and we will text you today. 🚌
-#NowHiring #TomsRiver #BusDriver #CDL #OceanCountyNJ` },
+#NowHiring #TomsRiver #BusDriver #CDL #LakewoodNJ` },
   { k: 'wa', title: 'WhatsApp status + broadcast message', where: 'Post as status every Tuesday. Send to the "Interested drivers" broadcast list.', text:
 `Way To Go NJ is hiring CDL school bus drivers in Toms River. ${C('pay')}. AM/PM routes, middle of the day free. ${C('cdl')} Reply to this message or ${C('phone') ? 'call ' + C('phone') : 'call us'} and we will get you started this week. Please forward to anyone looking for steady work. 🚌` },
   { k: 'dm', title: 'Direct message to a prospect (cold)', where: 'Someone who commented, liked, or is in a drivers group.', text:
