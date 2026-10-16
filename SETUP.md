@@ -1,76 +1,92 @@
-# Setting up applications and the admin portal
+# Switching on applications and the admin hub
 
-The website is static and lives in a public GitHub repository, so it cannot keep
-a secret. Applications are therefore stored in a Google Sheet inside your Google
-Workspace account, behind a small Google Apps Script. The admin key lives in that
-script, not in GitHub. Nothing in this repository is secret.
+The website lives in a public GitHub repository and GitHub Pages only serves
+files, so the site itself cannot hold a password or store applications. They
+are stored in Firebase, Google's free hosted database, and the site talks to it
+directly. Your admin login lives in Firebase Authentication. Nothing in this
+repository is secret: the Firebase config values in `config.js` are public by
+design, and access is controlled by the security rules and your login.
 
-You only do this once. It takes about ten minutes.
+You only do this once. It takes about fifteen minutes.
 
-## 1. Create the spreadsheet
+## 1. Create the Firebase project
 
-1. Go to https://sheets.new while signed in to your Google Workspace account.
-2. Name it **Way To Go Applications**. Leave it empty.
+1. Go to https://console.firebase.google.com and sign in with your Google account.
+2. Click **Create a project**. Name it `Way To Go NJ`. Turn **off** Google
+   Analytics. Click Create, then Continue.
 
-## 2. Add the script
+## 2. Create the database
 
-1. In that spreadsheet, click **Extensions**, then **Apps Script**.
-2. Delete everything in the editor and paste the whole contents of
-   `apps-script/Code.gs` from this repository.
-3. Click the save icon. Name the project **Applications gateway**.
+1. In the left menu, open **Build**, then **Firestore Database**.
+2. Click **Create database**. Keep the default location (or pick `nam5 (us-central)`).
+3. Choose **Start in production mode**. Click Create.
 
-## 3. Set the admin key
+## 3. Turn on email sign-in and make your admin account
 
-1. Make a long random key. On a Mac or Linux terminal:
-   `openssl rand -base64 36`
-   On Windows PowerShell:
-   `-join ((48..57)+(65..90)+(97..122) | Get-Random -Count 40 | % {[char]$_})`
-   Or use a password manager to generate a 40 character password.
-2. In the Apps Script editor, click the gear icon (**Project Settings**).
-3. Scroll to **Script Properties** and click **Add script property**.
-4. Property: `ADMIN_KEY`. Value: the key you generated. Save.
-5. Store the key in your password manager. This is what you type into the
-   admin portal on the website. Do not put it anywhere in GitHub.
+1. Open **Build**, then **Authentication**, and click **Get started**.
+2. Under **Sign-in method**, click **Email/Password**, switch **Enable** on, and Save.
+3. Open the **Users** tab, click **Add user**, and enter the email and a long
+   password you will use to sign in to the admin hub. Save the password in a
+   password manager. This is the only admin password, and it never goes in GitHub.
+4. Open the **Settings** tab, then **User actions**, and **uncheck "Enable
+   create (sign-up)"**. Save. This stops anyone else from creating an account.
+5. Still in Settings, open **Authorized domains** and add `waytogonj.com` and
+   `www.waytogonj.com`.
 
-## 4. Run the check once
+## 4. Paste the security rules
 
-1. Back in the editor, pick `setupCheck` in the function dropdown and click **Run**.
-2. Google will ask you to authorize the script. Click through **Review permissions**,
-   choose your account, click **Advanced**, then **Go to Applications gateway (unsafe)**.
-   This warning appears for every script you write yourself.
-3. The log should say the sheet is ready and ADMIN_KEY is set.
+1. Open **Firestore Database**, then the **Rules** tab.
+2. Delete everything there and paste the whole contents of `firestore.rules`
+   from this repository.
+3. Change `YOUR-ADMIN-EMAIL@waytogonj.com` to the email you created in step 3.
+4. Click **Publish**.
 
-## 5. Deploy it
+## 5. Connect the website
 
-1. Click **Deploy**, then **New deployment**.
-2. Click the gear next to "Select type" and choose **Web app**.
-3. Description: `v1`. Execute as: **Me**. Who has access: **Anyone**.
-   "Anyone" is required so the public form can submit. The admin list is still
-   protected by the key.
-4. Click **Deploy**, then copy the **Web app URL**. It ends in `/exec`.
+1. Click the gear icon next to **Project Overview**, then **Project settings**.
+2. Scroll to **Your apps** and click the **Web** icon (it looks like `</>`).
+3. Nickname: `Website`. Leave Firebase Hosting unchecked. Click **Register app**.
+4. You will see a block of code containing `const firebaseConfig = { ... }`.
+   Copy the values inside the braces.
+5. Open https://github.com/193JayFischer/WayToGo/edit/main/config.js and paste
+   each value into the matching line (apiKey, authDomain, projectId, and so on).
+   Commit the change.
 
-## 6. Put the URL in the website
+Within a minute the application form, the contact form, and the admin hub are live.
 
-1. Open https://github.com/193JayFischer/WayToGo/edit/main/config.js
-2. Paste the URL between the quotes after `endpoint:` and commit.
-3. Within a minute the form and the admin portal are live.
+## 6. Test it
 
-## Changing the code later
+1. Open https://waytogonj.com/apply.html and submit a test application.
+2. Open https://waytogonj.com/admin.html and sign in with the email and
+   password from step 3. The test application should be in the Leads tab.
+   Delete it from its Details panel when you are done.
 
-Whenever `apps-script/Code.gs` changes, paste the new version into the editor,
-then click **Deploy**, **Manage deployments**, the pencil icon, set Version to
-**New version**, and **Deploy**. The URL stays the same.
+## Changing the admin password
+
+Firebase console, **Authentication**, **Users**, the three dots next to your
+user, **Reset password**. Or sign in once and use the reset email flow.
+
+## Adding a second admin
+
+Add the person as a user in step 3, then add their email to the list inside
+`isAdmin()` in the Firestore rules and Publish again.
 
 ## Leads from Facebook, Indeed, and other apps
 
-The same web app URL accepts leads from any tool that can send a web request,
-such as Zapier, Make, or a Facebook Lead Ads integration. Send a POST with a
-JSON body using the field names in `FIELDS` inside `Code.gs`, and set `source`
-to the app name, for example `Facebook`. Each lead lands in the same sheet,
-emails you, and shows in the admin portal with its source. Rows typed straight
-into the sheet show there too.
+Two ways:
 
-## Changing the admin key
+- **By hand, in seconds.** The Leads tab has an "Add a lead" form. Pick the
+  source, set a follow-up date, done.
+- **Automatically.** Any connector that can send a web request (Zapier, Make,
+  a Facebook Lead Ads integration) can post straight into the database using
+  the Firestore REST API. Target
+  `https://firestore.googleapis.com/v1/projects/YOUR-PROJECT-ID/databases/(default)/documents/applications`
+  with fields `fullName`, `phone`, `email`, `city`, `notes`, `source` (for
+  example `Facebook`), `type` set to `Lead`, `status` set to `New`, and
+  `createdAt` as a timestamp. The rules allow creates from anywhere, so no
+  secret is needed on the connector side.
 
-Edit the `ADMIN_KEY` script property. No redeploy needed. Anyone still logged in
-to the portal is logged out on their next refresh.
+## Costs
+
+Firebase's free plan covers roughly 50,000 reads and 20,000 writes a day, far
+more than a recruiting site uses. Nothing here needs a paid plan.

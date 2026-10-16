@@ -1,15 +1,16 @@
 /* Way To Go NJ shared styles */
 :root {
-  --navy: #0b1a33;
-  --navy-2: #12264a;
+  --navy: #0d0d0d;      /* site "dark" is the logo black */
+  --navy-2: #1a1a1a;
   --ink: #15202b;
   --muted: #5b6878;
   --line: #e3e8ef;
   --bg: #ffffff;
   --bg-alt: #f5f7fb;
-  --yellow: #ffc72c;
-  --yellow-dark: #e6ae00;
-  --blue: #0b5fff;
+  --yellow: #ffd500;    /* logo yellow */
+  --yellow-dark: #e6c000;
+  --blue: #1c9be8;      /* logo blue, for accents and large text */
+  --blue-dark: #1273b5; /* darker blue for buttons and links on white */
   --red: #d64545;
   --green: #1f9d55;
   --radius: 14px;
@@ -18,7 +19,7 @@
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 body { margin: 0; font-family: var(--font); color: var(--ink); background: var(--bg); line-height: 1.6; }
-a { color: var(--blue); text-decoration: none; }
+a { color: var(--blue-dark); text-decoration: none; }
 img { max-width: 100%; }
 .wrap { max-width: 960px; margin: 0 auto; padding: 0 20px; }
 
@@ -28,13 +29,13 @@ img { max-width: 100%; }
   padding: 14px 28px; border-radius: 999px; border: 0; cursor: pointer;
   background: var(--yellow); color: var(--navy); font: 600 1rem var(--font);
   transition: transform .12s, background .15s, box-shadow .15s;
-  box-shadow: 0 6px 18px rgba(255, 199, 44, .35);
+  box-shadow: 0 6px 18px rgba(255, 213, 0, .35);
 }
 .btn:hover { background: var(--yellow-dark); transform: translateY(-1px); }
 .btn:active { transform: translateY(0); }
 .btn.big { padding: 20px 44px; font-size: 1.25rem; }
-.btn.blue { background: var(--blue); color: #fff; box-shadow: 0 6px 18px rgba(11, 95, 255, .3); }
-.btn.blue:hover { background: #0847bf; }
+.btn.blue { background: var(--blue-dark); color: #fff; box-shadow: 0 6px 18px rgba(28, 155, 232, .3); }
+.btn.blue:hover { background: #0f5f96; }
 .btn.outline { background: transparent; color: var(--navy); border: 2px solid var(--navy); box-shadow: none; }
 .btn.outline:hover { background: var(--bg-alt); }
 .btn[disabled] { opacity: .6; cursor: not-allowed; transform: none; }
@@ -42,8 +43,12 @@ img { max-width: 100%; }
 /* Header for inner pages */
 .topbar { position: sticky; top: 0; z-index: 10; background: var(--navy); color: #fff; }
 .topbar .wrap { display: flex; align-items: center; justify-content: space-between; height: 62px; }
-.topbar .logo { color: #fff; font-weight: 800; letter-spacing: -.01em; }
-.topbar .logo span { color: var(--yellow); }
+/* Logo lockup: bus mark + wordmark */
+.logo { display: inline-flex; align-items: center; gap: 10px; color: #fff; }
+.logo .mark { height: 34px; width: auto; flex: none; }
+.logo .word { font-weight: 900; font-style: italic; font-size: 1.35rem; letter-spacing: -.03em; line-height: 1; color: #fff; }
+.logo .word em { font-style: italic; color: var(--blue); font-weight: 800; }
+.topbar .logo { color: #fff; }
 .topbar .btn { padding: 10px 20px; font-size: .95rem; }
 
 /* Content */
@@ -67,10 +72,12 @@ ul.checks li::after {
 .card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 24px; }
 .cta-row { margin-top: 28px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
 .cta-row small { color: var(--muted); }
-.badge { display: inline-block; background: #fff4cc; color: #7a5a00; font-weight: 600; font-size: .85rem; padding: 4px 12px; border-radius: 999px; }
-footer { background: var(--navy); color: #c5cee0; padding: 28px 0; font-size: .9rem; }
-footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+.badge { display: inline-block; background: #fff6bf; color: #6b5600; font-weight: 600; font-size: .85rem; padding: 4px 12px; border-radius: 999px; }
+footer { background: var(--navy); color: #bfc4cc; padding: 32px 0; font-size: .9rem; }
+footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px; align-items: flex-start; }
 footer a { color: #fff; }
+footer .contact { display: grid; gap: 4px; }
+footer .contact b { color: var(--yellow); }
 
 /* Forms */
 .form-card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 28px; }
@@ -83,17 +90,17 @@ legend { font-weight: 700; font-size: 1.15rem; margin-bottom: 14px; padding: 0; 
 input[type=text], input[type=email], input[type=tel], input[type=date], input[type=password], input[type=number], select, textarea {
   font: 1rem var(--font); padding: 12px 14px; border: 1px solid #c9d2df; border-radius: 10px; background: #fff; width: 100%;
 }
-input:focus, select:focus, textarea:focus { outline: 2px solid var(--yellow); outline-offset: 1px; border-color: var(--yellow-dark); }
+input:focus, select:focus, textarea:focus { outline: 2px solid var(--blue); outline-offset: 1px; border-color: var(--blue); }
 textarea { min-height: 110px; resize: vertical; }
 .choices { display: flex; flex-wrap: wrap; gap: 10px; }
 .choices label {
   display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; border: 1px solid #c9d2df;
   border-radius: 10px; cursor: pointer; font-weight: 500; background: #fff;
 }
-.choices label:has(input:checked) { border-color: var(--yellow-dark); background: #fff8df; }
+.choices label:has(input:checked) { border-color: var(--yellow-dark); background: #fff9d6; }
 .choices input { margin: 0; }
 .notice { border-radius: 10px; padding: 14px 16px; margin-bottom: 20px; font-size: .95rem; }
-.notice.info { background: #eef3ff; color: #1b3a80; }
+.notice.info { background: #e6f3fc; color: #0c4a75; }
 .notice.ok { background: #e6f7ec; color: #14532d; }
 .notice.err { background: #fde8e8; color: #7f1d1d; }
 .notice a { font-weight: 600; }
@@ -105,3 +112,11 @@ textarea { min-height: 110px; resize: vertical; }
   .form-card { padding: 20px; }
   .btn.big { width: 100%; padding: 18px 24px; font-size: 1.1rem; }
 }
+
+/* Social links */
+.social { display: flex; gap: 8px; flex-wrap: wrap; }
+.social a { width: 38px; height: 38px; border-radius: 50%; display: inline-grid; place-items: center; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.18); color: #fff; transition: background .15s, transform .12s; }
+.social a:hover { background: var(--yellow); color: #111; transform: translateY(-1px); }
+.social svg { width: 18px; height: 18px; fill: currentColor; }
+footer .social { margin-top: 6px; }
+.social a[hidden] { display: none; }

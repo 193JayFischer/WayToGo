@@ -3,166 +3,571 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Admin Portal</title>
+  <title>Recruiting Hub</title>
   <meta name="robots" content="noindex, nofollow">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%230b1a33'/%3E%3Cpath d='M18 22h28v22H18z' fill='%23ffc72c'/%3E%3C/svg%3E">
+  <link rel="icon" href="favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <style>
     body { background: var(--bg-alt); }
-    .login { max-width: 420px; margin: 80px auto; }
+    .topbar .wrap { height: auto; flex-wrap: wrap; padding-top: 10px; padding-bottom: 0; row-gap: 6px; }
+    .topbar .title { color: #bfc4cc; font-size: .85rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; margin-left: 10px; }
+    .tabs { display: flex; gap: 2px; width: 100%; overflow-x: auto; scrollbar-width: none; }
+    .tabs button { background: none; border: 0; border-bottom: 3px solid transparent; color: #cfd3d9; font: 700 1rem var(--font); padding: 12px 16px; cursor: pointer; white-space: nowrap; }
+    .tabs button[aria-selected="true"] { color: #fff; border-bottom-color: var(--yellow); }
+    .tabs button .n { display: inline-block; min-width: 22px; padding: 1px 7px; margin-left: 6px; border-radius: 11px; background: var(--yellow); color: #111; font-size: .8rem; text-align: center; }
+    .topbar .btn { padding: 8px 16px; font-size: .9rem; }
+    main { padding: 22px 0 70px; }
+    .view { display: none; flex-direction: column; gap: 18px; }
+    .view.on { display: flex; }
+    .panel { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+    .panel h2 { font-size: 1.5rem; margin: 0; }
+    .panel h3 { margin: 0; }
+    .eyebrow { font-size: .75rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); font-weight: 700; }
+    .note { font-size: .9rem; color: var(--muted); }
+    .rowx { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .btn.sm { padding: 8px 14px; font-size: .9rem; }
+    .btn.danger { background: transparent; color: var(--red); border: 2px solid var(--red); box-shadow: none; }
+    .btn.outline.sm { border-width: 1.5px; }
+    .login { max-width: 440px; margin: 60px auto; }
     .login h1 { font-size: 1.6rem; }
-    .toolbar { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin: 24px 0 16px; }
-    .toolbar input { max-width: 320px; }
-    .toolbar .spacer { flex: 1; }
-    .count { color: var(--muted); font-size: .95rem; }
-    table { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
-    th, td { text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--line); font-size: .95rem; vertical-align: top; }
-    th { background: #f0f3f8; font-size: .8rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
-    tr.summary { cursor: pointer; }
-    tr.summary:hover { background: #fbfcfe; }
-    tr.detail { display: none; background: #fafbfd; }
-    tr.detail.open { display: table-row; }
-    .kv { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px 24px; }
-    .kv div b { display: block; font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
-    .pill { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: .8rem; font-weight: 600; background: #eef3ff; color: #1b3a80; }
-    .pill.src { background: #fff4cc; color: #7a5a00; }
-    .table-wrap { overflow-x: auto; }
-    @media (max-width: 720px) { th.opt, td.opt { display: none; } }
+    .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: #111; color: #fff; padding: 10px 18px; border-radius: 999px; font-weight: 600; opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 30; }
+    .toast.on { opacity: 1; }
+    .field { margin-bottom: 0; }
+    .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+    .span2 { grid-column: 1 / -1; }
+
+    /* stats */
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; }
+    .stat { background: var(--bg-alt); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+    .stat b { display: block; font-size: 1.7rem; font-weight: 800; line-height: 1.1; }
+    .stat span { font-size: .75rem; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; font-weight: 600; }
+
+    /* leads */
+    .filters { display: flex; gap: 8px; flex-wrap: wrap; }
+    .filters input, .filters select { width: auto; flex: 1 1 150px; padding: 10px 12px; }
+    .leads { display: flex; flex-direction: column; gap: 10px; }
+    .ld { display: grid; grid-template-columns: 1fr auto; gap: 8px 12px; border: 1px solid var(--line); border-left: 5px solid var(--line); border-radius: 10px; padding: 12px 14px; background: #fff; align-items: start; }
+    .ld.due { border-left-color: #e08a00; }
+    .ld.hot { border-left-color: var(--green); }
+    .ld.new { border-left-color: var(--blue); }
+    .ld.cold { opacity: .6; }
+    .ld .who { font-weight: 700; font-size: 1.05rem; }
+    .ld .who small { font-weight: 500; color: var(--muted); margin-left: 8px; }
+    .ld .meta { display: flex; gap: 6px; flex-wrap: wrap; font-size: .85rem; color: var(--muted); margin-top: 4px; align-items: center; }
+    .chip { display: inline-block; font-size: .75rem; font-weight: 700; padding: 2px 9px; border-radius: 999px; background: #fff6bf; color: #6b5600; }
+    .chip.type { background: #e6f3fc; color: #0c4a75; }
+    .chip.inq { background: #f1e8ff; color: #4a2580; }
+    .chip.ld { background: #e8f7ee; color: #14532d; }
+    .ld .ctl { display: flex; flex-direction: column; gap: 6px; align-items: end; }
+    .ld .ctl select { width: auto; padding: 6px 8px; font-size: .9rem; }
+    .ld .notes { grid-column: 1 / -1; font-size: .92rem; white-space: pre-wrap; color: #333; }
+    .ld .more { grid-column: 1 / -1; display: none; flex-direction: column; gap: 12px; border-top: 1px dashed var(--line); padding-top: 12px; }
+    .ld.open .more { display: flex; }
+    .kv { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px 20px; }
+    .kv div b { display: block; font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+    .confirm { display: none; gap: 8px; align-items: center; font-size: .9rem; color: var(--red); }
+    .confirm.on { display: flex; }
+    .empty { color: var(--muted); text-align: center; padding: 24px; border: 1px dashed var(--line); border-radius: 10px; }
+
+    /* setup steps */
+    .steps { display: flex; flex-direction: column; }
+    .step { display: grid; grid-template-columns: 34px 1fr; gap: 12px; padding: 12px 0; border-top: 1px solid var(--line); align-items: start; }
+    .step:first-child { border-top: 0; }
+    .step .num { width: 30px; height: 30px; border-radius: 50%; background: var(--yellow); color: #111; font-weight: 800; display: grid; place-items: center; }
+    .step.done .num { background: var(--green); color: #fff; }
+    .step .ttl { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .step .ttl label { display: flex; align-items: center; gap: 8px; font-weight: 700; cursor: pointer; }
+    .step .ttl input { width: 18px; height: 18px; margin: 0; }
+    .step p { color: var(--muted); margin: 4px 0 0; font-size: .95rem; }
+    .step .links { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+    .step .links a { font-size: .85rem; font-weight: 600; border: 1px solid var(--line); border-radius: 8px; padding: 5px 10px; background: var(--bg-alt); }
+    .cost { font-size: .7rem; font-weight: 800; padding: 2px 8px; border-radius: 999px; background: #e8f7ee; color: #14532d; letter-spacing: .05em; }
+    .cost.paid { background: #fff0e0; color: #8a4b00; }
+
+    /* posts */
+    .launch { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
+    .site { border: 1px solid var(--line); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 6px; background: var(--bg-alt); }
+    .site b { font-size: .98rem; }
+    .site small { color: var(--muted); }
+    .site .rowx { gap: 6px; margin-top: 4px; }
+    .tpl .hd { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .tpl .where { font-size: .88rem; color: var(--muted); }
+    .tpl textarea { min-height: 140px; font-size: .92rem; }
+    #qrbox { background: #fff; padding: 8px; border-radius: 8px; width: fit-content; }
+
+    /* routine */
+    table { border-collapse: collapse; width: 100%; font-size: .92rem; }
+    th, td { text-align: left; padding: 10px; border-top: 1px solid var(--line); vertical-align: top; }
+    th { font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+    thead th { border-top: 0; }
+    td:first-child { font-weight: 700; white-space: nowrap; }
+    .tablewrap { overflow-x: auto; }
+
+    @media (max-width: 560px) { .ld { grid-template-columns: 1fr; } .ld .ctl { align-items: start; flex-direction: row; flex-wrap: wrap; } .panel { padding: 16px; } }
   </style>
 </head>
 <body>
 
 <header class="topbar">
   <div class="wrap">
-    <a class="logo" href="index.html">Way To Go <span>NJ</span> <span style="color:#c9d4ea;font-weight:500;font-size:.9rem;margin-left:8px">Admin</span></a>
+    <a class="logo" href="index.html"><svg class="mark" viewBox="0 0 120 96" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><g transform="skewX(-8) translate(8 0)"><rect x="8" y="6" width="100" height="64" rx="13" fill="#FFD500" stroke="#111" stroke-width="7"/><text x="58" y="55" text-anchor="middle" font-family="Inter, 'Arial Black', Arial, sans-serif" font-weight="900" font-style="italic" font-size="40" fill="#fff" stroke="#111" stroke-width="4" paint-order="stroke" letter-spacing="-1">WTG</text></g><circle cx="34" cy="78" r="11" fill="#1C9BE8" stroke="#111" stroke-width="6"/><circle cx="88" cy="78" r="11" fill="#1C9BE8" stroke="#111" stroke-width="6"/></svg><span class="word">WAY<em>To</em>GO</span><span class="title">Recruiting hub</span></a>
     <button class="btn outline" id="logout" style="display:none;color:#fff;border-color:rgba(255,255,255,.4)">Log out</button>
+    <nav class="tabs" id="tabs" role="tablist" style="display:none">
+      <button role="tab" data-tab="leads" aria-selected="true">Leads<span class="n" id="leadCount">0</span></button>
+      <button role="tab" data-tab="posts" aria-selected="false">Posts</button>
+      <button role="tab" data-tab="setup" aria-selected="false">Setup</button>
+      <button role="tab" data-tab="routine" aria-selected="false">Routine</button>
+    </nav>
   </div>
 </header>
 
-<div class="wrap">
+<main class="wrap">
+
+  <!-- LOGIN -->
   <div id="login" class="login form-card">
-    <h1>Admin access</h1>
-    <p class="lead" style="font-size:1rem">Enter the admin key to view driver applications.</p>
-    <div id="login-off" class="notice err" style="display:none">The admin portal is not switched on yet. Finish SETUP.md first.</div>
+    <h1>Admin sign in</h1>
+    <p class="lead" style="font-size:1rem">Sign in to see applications, inquiries, and leads.</p>
+    <div id="login-off" class="notice err" style="display:none">The admin hub is not switched on yet. Finish SETUP.md first.</div>
     <form id="login-form">
-      <div class="field"><label for="key">Admin key</label><input id="key" type="password" autocomplete="current-password" required></div>
-      <div id="login-error" class="notice err" style="display:none"></div>
-      <button class="btn blue" type="submit" id="login-btn">Open portal</button>
+      <div class="field"><label for="email">Email</label><input id="email" type="email" autocomplete="username" required></div>
+      <div class="field" style="margin-top:12px"><label for="password">Password</label><input id="password" type="password" autocomplete="current-password" required></div>
+      <div id="login-error" class="notice err" style="display:none;margin-top:12px"></div>
+      <button class="btn blue" type="submit" id="login-btn" style="margin-top:16px">Sign in</button>
     </form>
   </div>
 
-  <div id="portal" style="display:none">
-    <div class="toolbar">
-      <input type="text" id="search" placeholder="Search name, phone, email, city, source">
-      <span class="count" id="count"></span>
-      <span class="spacer"></span>
-      <button class="btn outline" id="refresh">Refresh</button>
-      <button class="btn" id="export">Download CSV</button>
+  <!-- LEADS -->
+  <section class="view" id="view-leads">
+    <div class="panel">
+      <span class="eyebrow">Every driver and every inquiry, in one place</span>
+      <h2>Leads</h2>
+      <p class="note">Website applications and service inquiries land here on their own. Add anyone else who shows interest anywhere: a comment, a DM, a call, a referral. Set a follow-up date on each one. Orange means follow-up is due.</p>
+      <div class="stats" id="stats"></div>
+      <div id="leads-error" class="notice err" style="display:none"></div>
     </div>
-    <div id="portal-error" class="notice err" style="display:none"></div>
-    <div class="table-wrap">
-      <table>
-        <thead><tr>
-          <th>Received</th><th>Name</th><th>Phone</th><th class="opt">Email</th><th class="opt">Position</th><th class="opt">CDL</th><th>Source</th>
-        </tr></thead>
-        <tbody id="rows"></tbody>
-      </table>
+
+    <div class="panel">
+      <div class="rowx" style="justify-content:space-between">
+        <h3>Add a lead</h3>
+        <button class="btn outline sm" id="toggle-add" type="button">Show</button>
+      </div>
+      <div id="add-panel" style="display:none">
+        <div class="grid2">
+          <div class="field"><label for="l_name">Name</label><input id="l_name" placeholder="First and last"></div>
+          <div class="field"><label for="l_phone">Phone</label><input id="l_phone" placeholder="732-..."></div>
+          <div class="field"><label for="l_email">Email</label><input id="l_email" type="email"></div>
+          <div class="field"><label for="l_city">Town</label><input id="l_city"></div>
+          <div class="field"><label for="l_source">Where they came from</label><select id="l_source"></select></div>
+          <div class="field"><label for="l_cdl">License</label><select id="l_cdl"></select></div>
+          <div class="field"><label for="l_stage">Stage</label><select id="l_stage"></select></div>
+          <div class="field"><label for="l_next">Follow up on</label><input id="l_next" type="date"></div>
+          <div class="field span2"><label for="l_notes">Notes</label><textarea id="l_notes" rows="2" placeholder="Lives in Jackson, available AM only, wants to know about training..."></textarea></div>
+        </div>
+        <div class="rowx" style="margin-top:12px"><button class="btn" id="addLead" type="button">Add lead</button><span class="note" id="leadStatus"></span></div>
+      </div>
     </div>
-  </div>
-</div>
+
+    <div class="panel">
+      <div class="filters">
+        <input id="f_q" placeholder="Search name, phone, email, town, notes">
+        <select id="f_type"><option value="">All types</option><option>Driver application</option><option>Service inquiry</option><option>Lead</option></select>
+        <select id="f_stage"><option value="">All stages</option></select>
+        <select id="f_source"><option value="">All sources</option></select>
+        <select id="f_sort"><option value="next">Sort: follow-up date</option><option value="created">Sort: newest first</option><option value="name">Sort: name</option></select>
+        <button class="btn outline sm" id="export" type="button">Download CSV</button>
+      </div>
+      <div class="leads" id="leadList"><div class="empty">Loading...</div></div>
+    </div>
+  </section>
+
+  <!-- POSTS -->
+  <section class="view" id="view-posts">
+    <div class="panel">
+      <span class="eyebrow">Company details</span>
+      <h2>Fill this once. Every post below uses it.</h2>
+      <p class="note">Pay and the CDL line are the two things drivers read first, so be specific. Saved to the shared database, so it is the same on every device you sign in on.</p>
+      <div class="grid2">
+        <div class="field"><label for="c_phone">Hiring phone (calls and texts)</label><input id="c_phone"></div>
+        <div class="field"><label for="c_wa">WhatsApp number, digits only with country code</label><input id="c_wa" placeholder="17326081939"></div>
+        <div class="field"><label for="c_email">Hiring email</label><input id="c_email"></div>
+        <div class="field"><label for="c_contact">Who to ask for</label><input id="c_contact"></div>
+        <div class="field"><label for="c_pay">Pay line</label><input id="c_pay"></div>
+        <div class="field"><label for="c_bonus">Sign-on / referral bonus</label><input id="c_bonus"></div>
+        <div class="field span2"><label for="c_cdl">License line</label><input id="c_cdl"></div>
+        <div class="field span2"><label for="c_hours">Hours line</label><input id="c_hours"></div>
+      </div>
+      <div class="rowx"><button class="btn" id="saveCompany" type="button">Save details</button><span class="note" id="companyStatus"></span></div>
+    </div>
+
+    <div class="panel">
+      <span class="eyebrow">Post now</span>
+      <h3>One tap per site</h3>
+      <p class="note">Copy puts that site's text on the clipboard. Open lands on the posting page in a new tab. Paste, add a photo, post, come back. Tip: on the phone, hold the Copy button, then paste into the app.</p>
+      <div class="launch" id="launch"></div>
+    </div>
+
+    <div class="panel">
+      <span class="eyebrow">Copy, paste, post</span>
+      <h3>Ready-to-post text for every platform</h3>
+      <p class="note">Your company details are filled in automatically. Edit any box before copying; edits stay on this device until you reset.</p>
+      <div class="rowx"><button class="btn outline sm" id="refillTpl" type="button">Reset to defaults</button></div>
+    </div>
+    <div id="templates" class="view on" style="gap:14px"></div>
+
+    <div class="panel">
+      <span class="eyebrow">Flyers, bios, and "link in profile"</span>
+      <h3>Apply link and QR code</h3>
+      <p class="note">Prospects tap or scan and land on the application page. If you add a WhatsApp number above, a WhatsApp chat link is shown too.</p>
+      <div class="rowx"><input id="applylink" readonly style="flex:1 1 260px"><button class="btn sm" data-copy-el="applylink" type="button">Copy link</button></div>
+      <div class="rowx" id="warow" style="display:none"><input id="walink" readonly style="flex:1 1 260px"><button class="btn sm" data-copy-el="walink" type="button">Copy WhatsApp link</button></div>
+      <div id="qrbox"></div>
+    </div>
+  </section>
+
+  <!-- SETUP -->
+  <section class="view" id="view-setup">
+    <div class="panel">
+      <span class="eyebrow">Process order. Check off as you go.</span>
+      <h2>Setup checklist</h2>
+      <p class="note">Do these in order on the company phone. Everything marked FREE costs nothing. Total paid spend to launch can be zero. Progress is saved to the shared database.</p>
+      <div class="steps" id="steps"></div>
+    </div>
+  </section>
+
+  <!-- ROUTINE -->
+  <section class="view" id="view-routine">
+    <div class="panel">
+      <span class="eyebrow">Consistency beats budget</span>
+      <h2>Weekly posting routine</h2>
+      <p class="note">About 20 minutes a day on the company phone. Same text, rotated, so no platform goes quiet. Reply to every comment and message the same day. A driver who waits two days has already taken another job.</p>
+      <div class="tablewrap"><table>
+        <thead><tr><th>Day</th><th>Morning (after AM routes)</th><th>Afternoon (before PM routes)</th></tr></thead>
+        <tbody>
+          <tr><td>Monday</td><td>Refresh the Indeed post (edit the title or one line so it shows as updated). Post to the Facebook Page and Instagram from Business Suite.</td><td>Post in 3 Toms River, Lakewood, or Ocean County Facebook jobs and community groups.</td></tr>
+          <tr><td>Tuesday</td><td>WhatsApp status and broadcast to the "Interested drivers" list. Check Indeed and ZipRecruiter candidates and text every new one.</td><td>Work the Leads tab: call everyone due today.</td></tr>
+          <tr><td>Wednesday</td><td>Instagram Reel or photo (a bus, a driver, the yard). Same clip to Facebook.</td><td>Post in 3 different groups (Jackson, Howell, Brick, Manchester).</td></tr>
+          <tr><td>Thursday</td><td>Referral reminder to current drivers (text template). Nextdoor and Google Business post.</td><td>Reply to every DM and comment. Update lead stages.</td></tr>
+          <tr><td>Friday</td><td>Craigslist and LinkedIn repost. ZipRecruiter check.</td><td>Call leads due this week who went quiet. Set next week's dates.</td></tr>
+          <tr><td>Sunday night</td><td colspan="2">Schedule next week's Facebook and Instagram posts in Meta Business Suite (10 minutes). Check the "Added this week" number in the Leads tab.</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+    <div class="panel">
+      <h3>Rules that keep the money low</h3>
+      <div class="steps">
+        <div class="step"><div class="num">1</div><div><b>Free first, boost second.</b><p>Organic Indeed, Facebook groups, WhatsApp, Instagram, referrals and flyers are all free. Only boost a Facebook post ($5 a day, 5 days, Toms River + 15 miles) if a week of free posting brought fewer than 5 leads.</p></div></div>
+        <div class="step"><div class="num">2</div><div><b>Pay for ZipRecruiter only after the free trial proves it.</b><p>Count the leads it sends during the trial in the Leads tab (source = ZipRecruiter). Under 5 real leads, cancel before the trial ends.</p></div></div>
+        <div class="step"><div class="num">3</div><div><b>Referral bonus is the cheapest hire you will make.</b><p>Pay current drivers for every hire who lasts 90 days. It costs nothing until it works.</p></div></div>
+        <div class="step"><div class="num">4</div><div><b>Answer within the hour.</b><p>Keep WhatsApp Business and Indeed notifications on. Use the quick replies from the Posts tab so a reply takes 10 seconds.</p></div></div>
+        <div class="step"><div class="num">5</div><div><b>Recruit people without a CDL.</b><p>Most people who would be good drivers do not have a CDL yet. "Training available" is the one line that makes a post stand out. Say it in every post.</p></div></div>
+      </div>
+    </div>
+  </section>
+
+</main>
+<div class="toast" id="toast">Copied</div>
 
 <script src="config.js"></script>
-<script>
-(function () {
-  var endpoint = (window.WTG_CONFIG && window.WTG_CONFIG.endpoint || '').trim();
-  var SKEY = 'wtg-admin-key';
-  var rows = [];
-  var $ = function (id) { return document.getElementById(id); };
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script type="module">
+import { isConfigured, connect, friendlyError } from './site.js';
+(async function () {
+'use strict';
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const toast = (m) => { const t = $('toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('on'), 1600); };
+const copyText = async (text) => { try { await navigator.clipboard.writeText(text); toast('Copied'); } catch (e) { const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); toast('Copied'); } catch (_) { toast('Select the text and copy it manually'); } ta.remove(); } };
+const today = () => new Date().toISOString().slice(0, 10);
+const addDays = (n) => { const d = new Date(); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); };
+const SITE = location.origin + location.pathname.replace(/[^/]*$/, '');
+const APPLY_URL = SITE + 'apply.html';
 
-  if (!endpoint) { $('login-off').style.display = 'block'; $('login-btn').disabled = true; }
+/* ---------- tabs ---------- */
+const tabs = [...document.querySelectorAll('#tabs button')];
+function showTab(name) { tabs.forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === name))); ['leads', 'posts', 'setup', 'routine'].forEach((v) => $('view-' + v).classList.toggle('on', v === name)); try { localStorage.setItem('wtg.tab', name); } catch (e) {} }
+tabs.forEach((b) => b.addEventListener('click', () => showTab(b.dataset.tab)));
 
-  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
-  function fmtDate(v) { var d = new Date(v); return isNaN(d) ? esc(v) : d.toLocaleString(); }
+/* ---------- constants ---------- */
+const SOURCES = ['Website', 'Indeed', 'ZipRecruiter', 'Facebook post', 'Facebook group', 'Instagram', 'WhatsApp', 'Referral', 'Flyer / QR', 'Craigslist', 'LinkedIn', 'Nextdoor', 'Google', 'One-Stop', 'Walk-in / call', 'Other'];
+const CDLS = ['Unknown', 'No CDL, willing to train', 'Has CDL, needs P/S', 'Has CDL with P & S'];
+const STAGES = ['New', 'Contacted', 'Interested', 'Interview set', 'Paperwork / training', 'Hired', 'Not now'];
+const CLOSED = ['Hired', 'Not now'];
+const LABELS = { type: 'Type', source: 'Source', fullName: 'Full name', organization: 'Organization', phone: 'Phone', email: 'Email', city: 'Town', zip: 'ZIP', over21: 'At least 21', hasCdl: 'Holds CDL', cdlClass: 'CDL class', cdlState: 'License state', endorsements: 'Endorsements', cleanRecord: 'Clean driving record', experienceYears: 'School bus experience', lastEmployer: 'Most recent employer', otherExperience: 'Other passenger experience', positionType: 'Position wanted', shifts: 'Shifts', startDate: 'Earliest start', reliableTransport: 'Reliable transportation', canPass: 'Able to pass', hearAbout: 'Heard about us', referral: 'Referred by', notes: 'Their message / notes', consent: 'Consent', submittedFrom: 'Submitted from', license: 'License', next: 'Follow up on', adminNotes: 'Your notes', status: 'Stage' };
+const HIDDEN = new Set(['id', 'createdAt', 'updatedAt', 'status', 'next', 'adminNotes', 'license', 'source', 'type', 'fullName', 'phone', 'email', 'submittedFrom']);
+const opts = (arr, sel) => arr.map((v) => `<option ${v === sel ? 'selected' : ''}>${esc(v)}</option>`).join('');
+$('l_source').innerHTML = opts(SOURCES, 'Facebook post'); $('l_cdl').innerHTML = opts(CDLS); $('l_stage').innerHTML = opts(STAGES, 'New');
+$('f_stage').insertAdjacentHTML('beforeend', opts(STAGES)); $('f_source').insertAdjacentHTML('beforeend', opts(SOURCES));
+$('l_next').value = addDays(2);
 
-  function load(key) {
-    $('login-error').style.display = 'none';
-    $('portal-error').style.display = 'none';
-    $('login-btn').disabled = true; $('login-btn').textContent = 'Checking...';
-    return fetch(endpoint + '?action=list&key=' + encodeURIComponent(key), { redirect: 'follow' })
-      .then(function (r) { return r.json(); })
-      .then(function (res) {
-        if (!res || !res.ok) throw new Error(res && res.error || 'Could not load');
-        rows = res.rows || [];
-        try { sessionStorage.setItem(SKEY, key); } catch (e) {}
-        $('login').style.display = 'none';
-        $('portal').style.display = 'block';
-        $('logout').style.display = 'inline-flex';
-        render();
-      })
-      .catch(function (err) {
-        var msg = /unauthori/i.test(err.message) ? 'That key is not correct.' : 'Could not reach the applications store. ' + err.message;
-        if ($('portal').style.display === 'block') { $('portal-error').textContent = msg; $('portal-error').style.display = 'block'; }
-        else { $('login-error').textContent = msg; $('login-error').style.display = 'block'; }
-      })
-      .then(function () { $('login-btn').disabled = false; $('login-btn').textContent = 'Open portal'; });
+/* ---------- company details ---------- */
+const CFIELDS = ['phone', 'wa', 'email', 'contact', 'pay', 'bonus', 'cdl', 'hours'];
+const DEFAULTS = { phone: '732-608-1939', wa: '', email: 'info@waytogonj.com', contact: 'Ask for Jay', pay: '$22 to $28 per hour, based on experience and endorsements', bonus: 'Sign-on bonus opportunities and a referral bonus program', cdl: 'CDL with P and S endorsements preferred, not required. No CDL? Training available.', hours: 'AM routes, PM routes, and split shifts. Full-time, part-time, and on-call. Minimum hours guaranteed.' };
+let company = { ...DEFAULTS };
+const C = (k) => company[k] || '';
+function fillCompanyForm() { CFIELDS.forEach((k) => { $('c_' + k).value = company[k] || ''; }); }
+function readCompanyForm() { const o = {}; CFIELDS.forEach((k) => { o[k] = $('c_' + k).value.trim(); }); return o; }
+fillCompanyForm();
+
+/* ---------- templates ---------- */
+function waLink() { const n = (C('wa') || '').replace(/\D/g, ''); return n ? 'https://wa.me/' + n + '?text=' + encodeURIComponent("Hi, I'm interested in driving for Way To Go NJ.") : ''; }
+function contactLine() { const p = []; if (C('phone')) p.push('Call or text ' + C('phone') + (C('contact') ? ' (' + C('contact') + ')' : '')); p.push('Apply online: ' + APPLY_URL); if (waLink()) p.push('WhatsApp: ' + waLink()); if (C('email')) p.push('Email: ' + C('email')); return p.join('\n'); }
+function TPLS() { const bonus = C('bonus') ? C('bonus') + '\n' : ''; const b1 = C('bonus') ? ' ' + C('bonus') + '.' : ''; return [
+  { k: 'indeed', title: 'Indeed / ZipRecruiter / LinkedIn job post', where: 'Full description. Title: School Bus Driver, Toms River NJ, Training Available', text:
+`WAY TO GO NJ LLC is hiring experienced and dependable CDL School Bus Drivers in Toms River, NJ. We are a growing school transportation company serving Ocean County and we need reliable people now.
+
+PAY: ${C('pay')}
+${bonus}HOURS: ${C('hours')}
+LICENSE: ${C('cdl')}
+
+What you get:
+• Steady routes close to home (Toms River, Lakewood, Jackson, Howell, Brick)
+• Minimum hours guaranteed
+• Training available, and help with your CDL and endorsements
+• Mornings and afternoons, so the middle of your day is yours
+• Extra hours on field trips and activity runs
+• A dispatch team that picks up the phone
+
+Great fit for: retirees, parents with kids in school, anyone with a clean driving record who wants a set schedule, CDL holders who are tired of overnight trucking.
+
+Requirements: 21+, clean driving record, able to pass a DOT physical, drug screening, fingerprinting and a criminal background check. Reliable transportation and a strong attendance record. We walk you through every step.
+
+Apply here or reach us directly:
+${contactLine()}` },
+  { k: 'fb', title: 'Facebook Page + Instagram post', where: 'Post from Meta Business Suite to both at once. Add a bus photo.', text:
+`🚌 NOW HIRING: CDL School Bus Drivers in Toms River, NJ
+
+${C('pay')}${b1}
+${C('hours')}
+${C('cdl')}
+
+Mornings and afternoons, home in between. Retirees, parents, CDL holders who want to be home every night: this is the schedule you have been looking for.
+
+📲 ${C('phone') ? 'Call or text ' + C('phone') : ''}
+📝 Apply in 5 minutes: ${APPLY_URL}
+${waLink() ? '💬 WhatsApp: ' + waLink() : ''}
+
+Share this with someone who would be a great driver. 🙏
+#TomsRiver #LakewoodNJ #OceanCountyJobs #BusDriver #CDLJobs #NowHiring #JacksonNJ #HowellNJ #WayToGoNJ` },
+  { k: 'group', title: 'Facebook group post (short, community tone)', where: 'Local jobs and community groups. One group post a week each.', text:
+`Hi neighbors. Way To Go NJ (local school bus company, Toms River) is hiring CDL school bus drivers. ${C('pay')}. AM and PM routes, middle of the day free. ${C('cdl')} Great for retirees and parents. ${C('phone') ? 'Text ' + C('phone') : ''} or apply at ${APPLY_URL} and we will call you back the same day. Thanks for sharing!` },
+  { k: 'ig', title: 'Instagram Reel / Story caption', where: 'Short clip of the bus or yard. Put the apply link in the bio.', text:
+`We need drivers. Toms River and Ocean County. ${C('pay')}. Mornings and afternoons only. ${C('cdl')}
+Tap the link in bio or DM us "DRIVER" and we will text you today. 🚌
+#NowHiring #TomsRiver #BusDriver #CDL #OceanCountyNJ` },
+  { k: 'wa', title: 'WhatsApp status + broadcast message', where: 'Post as status every Tuesday. Send to the "Interested drivers" broadcast list.', text:
+`Way To Go NJ is hiring CDL school bus drivers in Toms River. ${C('pay')}. AM/PM routes, middle of the day free. ${C('cdl')} Reply to this message or ${C('phone') ? 'call ' + C('phone') : 'call us'} and we will get you started this week. Please forward to anyone looking for steady work. 🚌` },
+  { k: 'dm', title: 'Direct message to a prospect (cold)', where: 'Someone who commented, liked, or is in a drivers group.', text:
+`Hi [NAME], this is ${C('contact') ? C('contact').replace(/^Ask for /i, '') : 'the hiring team'} from Way To Go NJ in Toms River. We are hiring CDL school bus drivers, ${C('pay')}, mornings and afternoons with the middle of the day free. ${C('cdl')} Would you be open to a 5-minute call this week? What time works for you?` },
+  { k: 'follow', title: 'Follow-up text (lead went quiet)', where: '3 days after first contact, then once more a week later.', text:
+`Hi [NAME], Way To Go NJ here. Still have a route open near you, ${C('pay')}. Want me to hold it for you while you decide? Reply YES and I will send the next step, or apply at ${APPLY_URL}. ${C('phone') ? '- ' + C('phone') : ''}` },
+  { k: 'ref', title: 'Referral bonus text to current drivers', where: 'Every Thursday to your whole driver list.', text:
+`Team: we are still short on drivers. ${C('bonus') ? C('bonus') + '. ' : ''}Know anyone reliable who wants ${C('pay')} and a split schedule? Send them this link and tell them to put your name under "Referred by": ${APPLY_URL}. Thank you for helping us grow. - Way To Go NJ` },
+  { k: 'quick', title: 'WhatsApp Business quick replies', where: 'Settings > Business tools > Quick replies. One per line pair.', text:
+`/pay → ${C('pay')}${b1}
+/hours → ${C('hours')}
+/cdl → ${C('cdl')} We help with the DOT physical, background check, and endorsements.
+/apply → Great! Apply in 5 minutes here: ${APPLY_URL} or send me your full name, town, and whether you have a CDL, and I will call you today.` },
+  { k: 'cl', title: 'Craigslist ad', where: 'Jobs > transportation. Phone only, no email.', text:
+`CDL SCHOOL BUS DRIVERS - TOMS RIVER NJ - ${C('pay')}
+
+WAY TO GO NJ LLC is hiring now for Toms River, Lakewood, Jackson, Howell and Brick routes.
+${C('hours')}
+${C('cdl')}
+${bonus}Minimum hours guaranteed. 21+, clean driving record, DOT physical, drug screen, fingerprinting and background check required.
+
+${C('phone') ? 'Call or text ' + C('phone') + '. We answer the same day.' : ''}
+Apply online: ${APPLY_URL}` },
+]; }
+let tplEdited = {};
+try { tplEdited = JSON.parse(localStorage.getItem('wtg.tpl') || '{}') || {}; } catch (e) {}
+function renderTemplates() {
+  $('templates').innerHTML = TPLS().map((t) => `<div class="panel tpl"><div class="hd"><div><h3>${esc(t.title)}</h3><div class="where">${esc(t.where)}</div></div><button class="btn sm" data-copy="${t.k}" type="button">Copy</button></div><textarea id="tpl_${t.k}" data-k="${t.k}">${esc(tplEdited[t.k] != null ? tplEdited[t.k] : t.text)}</textarea></div>`).join('');
+  $('applylink').value = APPLY_URL;
+  const w = waLink(); $('warow').style.display = w ? 'flex' : 'none'; $('walink').value = w;
+  const box = $('qrbox'); box.innerHTML = '';
+  if (window.QRCode) { try { new QRCode(box, { text: w || APPLY_URL, width: 160, height: 160, correctLevel: QRCode.CorrectLevel.M }); } catch (e) {} }
+}
+renderTemplates();
+$('templates').addEventListener('input', (e) => { if (e.target.dataset.k) { tplEdited[e.target.dataset.k] = e.target.value; try { localStorage.setItem('wtg.tpl', JSON.stringify(tplEdited)); } catch (_) {} } });
+$('templates').addEventListener('click', (e) => { const k = e.target.dataset.copy; if (k) copyText($('tpl_' + k).value); });
+$('refillTpl').addEventListener('click', () => { tplEdited = {}; try { localStorage.removeItem('wtg.tpl'); } catch (_) {} renderTemplates(); toast('Templates reset'); });
+document.querySelectorAll('[data-copy-el]').forEach((b) => b.addEventListener('click', () => copyText($(b.dataset.copyEl).value)));
+
+/* ---------- launch pad ---------- */
+const SITES = [
+  { n: 'Facebook + Instagram', s: 'Business Suite, both at once', k: 'fb', u: 'https://business.facebook.com/latest/home' },
+  { n: 'Facebook groups', s: '3 groups a day', k: 'group', u: 'https://m.facebook.com/groups/' },
+  { n: 'Instagram', s: 'Reel or photo', k: 'ig', u: 'https://www.instagram.com/' },
+  { n: 'Indeed', s: 'Refresh Mondays', k: 'indeed', u: 'https://employers.indeed.com/jobs' },
+  { n: 'ZipRecruiter', s: 'Check candidates', k: 'indeed', u: 'https://www.ziprecruiter.com/employer/dashboard' },
+  { n: 'LinkedIn', s: 'Free job post', k: 'indeed', u: 'https://www.linkedin.com/talent/post-a-job' },
+  { n: 'Craigslist Jersey Shore', s: 'Jobs, transportation', k: 'cl', u: 'https://post.craigslist.org/c/jys' },
+  { n: 'Craigslist Central NJ', s: 'Jobs, transportation', k: 'cl', u: 'https://post.craigslist.org/c/cnj' },
+  { n: 'Nextdoor', s: 'Post as business', k: 'group', u: 'https://nextdoor.com/business/' },
+  { n: 'Google Business', s: 'Updates post', k: 'group', u: 'https://business.google.com/' },
+  { n: 'WhatsApp status', s: 'Tuesdays, in the app', k: 'wa', u: '' },
+  { n: 'Text current drivers', s: 'Thursdays', k: 'ref', u: '' },
+];
+$('launch').innerHTML = SITES.map((x) => `<div class="site"><b>${esc(x.n)}</b><small>${esc(x.s)}</small><div class="rowx"><button class="btn sm" data-copy="${x.k}" type="button">Copy</button>${x.u ? `<a class="btn outline sm" href="${x.u}" target="_blank" rel="noopener">Open</a>` : ''}</div></div>`).join('');
+$('launch').addEventListener('click', (e) => { const k = e.target.dataset.copy; if (k) copyText($('tpl_' + k).value); });
+
+/* ---------- setup steps ---------- */
+const STEPS = [
+  { k: 'details', t: 'Fill in Company details on the Posts tab and save', cost: 'free', p: 'Pay, hours and the license line drive every post. "Training available" is the strongest line you have.' },
+  { k: 'site', t: 'Make sure the website form and this hub are switched on', cost: 'free', p: 'Follow SETUP.md in the GitHub repository once. After that, every website application and service inquiry shows in the Leads tab on its own.', links: [['Open SETUP.md', 'https://github.com/193JayFischer/WayToGo/blob/main/SETUP.md']] },
+  { k: 'wa', t: 'Install WhatsApp Business on the company phone', cost: 'free', p: 'Use the hiring number. Set the business name to Way To Go NJ, add the address, hours, and a greeting message. Save the 4 quick replies from the Posts tab (/pay, /hours, /cdl, /apply). Create a label "Interested driver" and a broadcast list with the same name. Then add the number on the Posts tab so the WhatsApp link and QR appear.', links: [['WhatsApp Business (Android)', 'https://play.google.com/store/apps/details?id=com.whatsapp.w4b'], ['WhatsApp Business (iPhone)', 'https://apps.apple.com/app/whatsapp-business/id1386412985']] },
+  { k: 'home', t: 'Add this hub to the phone home screen', cost: 'free', p: 'Open waytogonj.com/admin.html in Chrome or Safari on the phone, then Share, then Add to Home Screen. Every lead goes in here the moment you talk to them.' },
+  { k: 'indeed', t: 'Post the Indeed job', cost: 'free', p: 'Employer dashboard, Post a job. Paste the Indeed template. Title: "School Bus Driver, Toms River NJ, Training Available". Turn on "Apply with Indeed" and text/phone contact. Skip sponsoring for the first week. Set applicant alerts to go to the hiring email.', links: [['Indeed employer dashboard', 'https://employers.indeed.com/']] },
+  { k: 'fbpage', t: 'Create or claim the Way To Go NJ Facebook Page and connect Instagram', cost: 'free', p: 'One Page, one Instagram business account, both managed from Meta Business Suite. Business Suite posts to Facebook and Instagram at once and lets you schedule a week of posts in one sitting. Profile photo: the bus with the logo. Bio: the pay line and the apply link.', links: [['Meta Business Suite', 'https://business.facebook.com/'], ['Create a Page', 'https://www.facebook.com/pages/create']] },
+  { k: 'groups', t: 'Join 10 local Facebook groups from the company account', cost: 'free', p: 'Search Facebook for: Toms River jobs, Toms River community, Lakewood NJ jobs, Jackson NJ, Howell NJ, Brick NJ, Ocean County jobs, Manchester NJ, Berkeley NJ, CDL drivers New Jersey. Read each group\'s rules. Most allow one job post a week. Post the short group template, not the long one.', links: [['Search groups', 'https://www.facebook.com/groups/search/groups/?q=toms%20river%20nj%20jobs']] },
+  { k: 'zip', t: 'Start the ZipRecruiter free trial', cost: 'trial', p: 'Post the same job. ZipRecruiter pushes it to 100+ partner boards, which is the part worth testing. Put a reminder in the phone calendar for the day before the trial ends and decide from the Leads tab whether it earned its fee.', links: [['ZipRecruiter employers', 'https://www.ziprecruiter.com/employer']] },
+  { k: 'cl', t: 'Post on Craigslist Jersey Shore and Central Jersey', cost: 'paid', p: 'Jobs, transportation. Craigslist charges a small per-post fee in New Jersey. Repost every 30 days. Use the Craigslist template with the phone number only, no email, to cut spam.', links: [['Craigslist Jersey Shore', 'https://jerseyshore.craigslist.org/'], ['Craigslist Central NJ', 'https://cnj.craigslist.org/']] },
+  { k: 'li', t: 'Post the free LinkedIn job and a Nextdoor post', cost: 'free', p: 'LinkedIn allows one free open job at a time. Nextdoor reaches Toms River, Lakewood, Jackson and Howell neighborhoods by address. Post as the business.', links: [['LinkedIn job posting', 'https://www.linkedin.com/talent/post-a-job'], ['Nextdoor for business', 'https://business.nextdoor.com/']] },
+  { k: 'gbp', t: 'Add a "We are hiring" post to Google Business Profile', cost: 'free', p: 'Anyone who searches Way To Go NJ sees it. Use the short template and the apply link.', links: [['Google Business Profile', 'https://business.google.com/']] },
+  { k: 'onestop', t: 'List the job with the NJ One-Stop Career Center (Ocean County)', cost: 'free', p: 'State job boards and career counselors send CDL and transportation candidates to listed employers at no cost. Call or email the Ocean County One-Stop and send them the Indeed text.', links: [['NJ Career Services', 'https://www.nj.gov/labor/career-services/']] },
+  { k: 'flyer', t: 'Print 50 flyers with the QR code', cost: 'under $20', p: 'Half page, big pay line, the QR code from the Posts tab, phone number in large type. Places: gas stations, laundromats, supermarkets, CDL schools, bus and truck yards, community bulletin boards, pizza shops near the industrial park. Ask every current driver to take 5.' },
+  { k: 'referral', t: 'Text every current driver the referral bonus message', cost: 'free', p: 'Drivers know drivers. The referral template is in the Posts tab. Repeat it every Thursday.' },
+  { k: 'schedule', t: 'Schedule the first week of posts in Meta Business Suite', cost: 'free', p: 'Sunday night, 10 minutes: one Facebook and Instagram post per day for the week, rotating the three social templates. Then follow the Routine tab.' },
+];
+let checklist = {};
+function renderSteps() {
+  $('steps').innerHTML = STEPS.map((s, i) => `<div class="step ${checklist[s.k] ? 'done' : ''}"><div class="num">${checklist[s.k] ? '✓' : i + 1}</div><div>
+    <div class="ttl"><label><input type="checkbox" data-step="${s.k}" ${checklist[s.k] ? 'checked' : ''}> ${esc(s.t)}</label><span class="cost ${s.cost === 'free' ? '' : 'paid'}">${esc(s.cost).toUpperCase()}</span></div>
+    <p>${esc(s.p)}</p>${s.links ? `<div class="links">${s.links.map((l) => `<a href="${l[1]}" target="_blank" rel="noopener">${esc(l[0])}</a>`).join('')}</div>` : ''}</div></div>`).join('');
+}
+renderSteps();
+
+/* ---------- database ---------- */
+if (!isConfigured()) { $('login-off').style.display = 'block'; $('login-btn').disabled = true; return; }
+let fb;
+try { fb = await connect(); } catch (e) { $('login-error').textContent = friendlyError(e); $('login-error').style.display = 'block'; $('login-btn').disabled = true; return; }
+const { db, auth, fs, authLib } = fb;
+const col = fs.collection(db, 'applications');
+const docRef = (id) => fs.doc(db, 'applications', id);
+let leads = [];
+let unsubs = [];
+
+function tsToIso(v) { if (!v) return ''; if (typeof v.toDate === 'function') return v.toDate().toISOString(); const d = new Date(v); return isNaN(d) ? '' : d.toISOString(); }
+function fmt(iso) { if (!iso) return ''; const d = new Date(iso); return isNaN(d) ? iso : d.toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' }); }
+
+function startListening() {
+  const q = fs.query(col, fs.orderBy('createdAt', 'desc'));
+  unsubs.push(fs.onSnapshot(q, (snap) => {
+    leads = snap.docs.map((d) => { const o = d.data(); return { ...o, id: d.id, createdAt: tsToIso(o.createdAt), updatedAt: tsToIso(o.updatedAt) }; });
+    $('leads-error').style.display = 'none';
+    renderLeads();
+  }, (err) => {
+    $('leads-error').textContent = /permission/i.test(err.message) ? 'This account is not allowed to view leads. Check the admin email in the Firestore rules (SETUP.md step 4).' : friendlyError(err);
+    $('leads-error').style.display = 'block';
+    $('leadList').innerHTML = '';
+  }));
+  unsubs.push(fs.onSnapshot(fs.doc(db, 'settings', 'company'), (snap) => { if (snap.exists()) { company = { ...DEFAULTS, ...snap.data() }; fillCompanyForm(); renderTemplates(); $('companyStatus').textContent = 'Loaded from the shared database.'; } }, () => {}));
+  unsubs.push(fs.onSnapshot(fs.doc(db, 'settings', 'checklist'), (snap) => { if (snap.exists()) { checklist = snap.data().done || {}; renderSteps(); } }, () => {}));
+}
+function stopListening() { unsubs.forEach((u) => { try { u(); } catch (e) {} }); unsubs = []; }
+
+/* ---------- auth ---------- */
+function setSignedIn(user) {
+  const on = !!user;
+  $('login').style.display = on ? 'none' : 'block';
+  $('tabs').style.display = on ? 'flex' : 'none';
+  $('logout').style.display = on ? 'inline-flex' : 'none';
+  ['leads', 'posts', 'setup', 'routine'].forEach((v) => $('view-' + v).classList.remove('on'));
+  if (on) { let t = 'leads'; try { t = localStorage.getItem('wtg.tab') || 'leads'; } catch (e) {} showTab(t); stopListening(); startListening(); }
+  else stopListening();
+}
+authLib.onAuthStateChanged(auth, setSignedIn);
+$('login-form').addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  $('login-error').style.display = 'none';
+  $('login-btn').disabled = true; $('login-btn').textContent = 'Signing in...';
+  try { await authLib.signInWithEmailAndPassword(auth, $('email').value.trim(), $('password').value); $('password').value = ''; }
+  catch (e) {
+    const code = e && e.code || '';
+    $('login-error').textContent = /invalid-credential|wrong-password|user-not-found|invalid-email/.test(code) ? 'Email or password is not correct.' : /too-many-requests/.test(code) ? 'Too many attempts. Wait a few minutes and try again.' : friendlyError(e);
+    $('login-error').style.display = 'block';
   }
+  $('login-btn').disabled = false; $('login-btn').textContent = 'Sign in';
+});
+$('logout').addEventListener('click', () => authLib.signOut(auth));
 
-  function render() {
-    var q = $('search').value.trim().toLowerCase();
-    var list = rows.filter(function (r) {
-      if (!q) return true;
-      return ['Full name', 'Phone', 'Email', 'City', 'Source'].some(function (k) { return String(r[k] || '').toLowerCase().indexOf(q) !== -1; });
-    });
-    $('count').textContent = list.length + ' of ' + rows.length + ' applications';
-    var html = '';
-    list.forEach(function (r, i) {
-      html += '<tr class="summary" data-i="' + i + '">' +
-        '<td>' + fmtDate(r['Received']) + '</td>' +
-        '<td><b>' + esc(r['Full name']) + '</b><br><span class="count">' + esc(r['City']) + '</span></td>' +
-        '<td><a href="tel:' + esc(r['Phone']) + '">' + esc(r['Phone']) + '</a></td>' +
-        '<td class="opt"><a href="mailto:' + esc(r['Email']) + '">' + esc(r['Email']) + '</a></td>' +
-        '<td class="opt">' + esc(r['Position wanted']) + '</td>' +
-        '<td class="opt">' + esc(r['Holds CDL']) + '</td>' +
-        '<td><span class="pill src">' + esc(r['Source'] || 'Website') + '</span></td>' +
-        '</tr><tr class="detail"><td colspan="7"><div class="kv">';
-      Object.keys(r).forEach(function (k) {
-        if (k === 'Received') return;
-        var v = r[k]; if (v === '' || v == null) return;
-        html += '<div><b>' + esc(k) + '</b>' + esc(v) + '</div>';
-      });
-      html += '</div></td></tr>';
-    });
-    $('rows').innerHTML = html || '<tr><td colspan="7" class="count">No applications yet.</td></tr>';
-  }
+/* ---------- leads ---------- */
+function stageClass(l) { if (CLOSED.includes(l.status)) return 'cold'; if (l.next && l.next <= today()) return 'due'; if (['Interested', 'Interview set', 'Paperwork / training'].includes(l.status)) return 'hot'; if (l.status === 'New' || !l.status) return 'new'; return ''; }
+function licenseOf(l) { if (l.license) return l.license; if (l.hasCdl) { if (/^yes/i.test(l.hasCdl)) { const e = (l.endorsements || []).join(' '); return /P/.test(e) && /S/.test(e) ? 'Has CDL with P & S' : 'Has CDL, needs P/S'; } return 'No CDL, willing to train'; } return ''; }
+function renderLeads() {
+  const q = $('f_q').value.trim().toLowerCase(), ft = $('f_type').value, fs_ = $('f_stage').value, fsrc = $('f_source').value, sort = $('f_sort').value;
+  const t = today(), wk = addDays(-7);
+  const open = leads.filter((l) => !CLOSED.includes(l.status));
+  $('leadCount').textContent = open.length;
+  $('stats').innerHTML = [['Open leads', open.length], ['Due today', open.filter((l) => l.next && l.next <= t).length], ['New this week', leads.filter((l) => (l.createdAt || '').slice(0, 10) >= wk).length], ['Inquiries', leads.filter((l) => l.type === 'Service inquiry').length], ['In training', leads.filter((l) => l.status === 'Paperwork / training').length], ['Hired', leads.filter((l) => l.status === 'Hired').length]].map(([k, v]) => `<div class="stat"><b>${v}</b><span>${k}</span></div>`).join('');
+  let rows = leads.filter((l) => (!ft || (l.type || 'Lead') === ft) && (!fs_ || (l.status || 'New') === fs_) && (!fsrc || l.source === fsrc) && (!q || [l.fullName, l.phone, l.email, l.city, l.organization, l.notes, l.adminNotes, l.source].join(' ').toLowerCase().includes(q)));
+  rows.sort((a, b) => { if (sort === 'name') return (a.fullName || '').localeCompare(b.fullName || ''); if (sort === 'created') return (b.createdAt || '').localeCompare(a.createdAt || ''); const ad = CLOSED.includes(a.status), bd = CLOSED.includes(b.status); if (ad !== bd) return ad ? 1 : -1; return (a.next || '9999').localeCompare(b.next || '9999') || (b.createdAt || '').localeCompare(a.createdAt || ''); });
+  if (!rows.length) { $('leadList').innerHTML = `<div class="empty">${leads.length ? 'No leads match these filters.' : 'No leads yet. Website applications show up here automatically. Add anyone else with the form above.'}</div>`; return; }
+  $('leadList').innerHTML = rows.map((l) => {
+    const type = l.type || 'Lead'; const closed = CLOSED.includes(l.status); const lic = licenseOf(l);
+    const extra = Object.keys(l).filter((k) => !HIDDEN.has(k) && l[k] !== '' && l[k] != null && !(Array.isArray(l[k]) && !l[k].length)).map((k) => `<div><b>${esc(LABELS[k] || k)}</b>${esc(Array.isArray(l[k]) ? l[k].join(', ') : l[k])}</div>`).join('');
+    return `<div class="ld ${stageClass(l)}" data-id="${l.id}">
+      <div><div class="who">${esc(l.fullName || '(no name)')}${l.phone ? `<small><a href="tel:${esc(l.phone)}">${esc(l.phone)}</a></small>` : ''}</div>
+      <div class="meta"><span class="chip type ${type === 'Service inquiry' ? 'inq' : type === 'Lead' ? 'lead' : ''}">${esc(type)}</span><span class="chip">${esc(l.source || 'Website')}</span>${lic ? `<span class="chip">${esc(lic)}</span>` : ''}${l.organization ? `<span>${esc(l.organization)}</span>` : ''}${l.city ? `<span>${esc(l.city)}</span>` : ''}<span>${fmt(l.createdAt)}</span>${l.next ? `<span>Follow up ${esc(l.next)}${l.next <= t && !closed ? ' (due)' : ''}</span>` : ''}</div></div>
+      <div class="ctl"><select data-stage="${l.id}">${opts(STAGES, l.status || 'New')}</select><button class="btn outline sm" data-open="${l.id}" type="button">Details</button></div>
+      ${l.notes ? `<div class="notes">${esc(l.notes)}</div>` : ''}
+      <div class="more">
+        ${extra ? `<div class="kv">${extra}</div>` : ''}
+        <div class="grid2">
+          <div class="field"><label>Phone</label><input data-f="phone" value="${esc(l.phone || '')}"></div>
+          <div class="field"><label>Email</label><input data-f="email" value="${esc(l.email || '')}"></div>
+          <div class="field"><label>Follow up on</label><input type="date" data-f="next" value="${esc(l.next || '')}"></div>
+          <div class="field"><label>Source</label><select data-f="source">${opts(SOURCES, l.source || 'Website')}</select></div>
+          <div class="field"><label>License</label><select data-f="license">${opts(CDLS, lic || 'Unknown')}</select></div>
+          <div class="field span2"><label>Your notes</label><textarea data-f="adminNotes" rows="3">${esc(l.adminNotes || '')}</textarea></div>
+        </div>
+        <div class="rowx"><button class="btn sm" data-save="${l.id}" type="button">Save</button><button class="btn outline sm" data-copydm="${l.id}" type="button">Copy follow-up text</button>${l.email ? `<a class="btn outline sm" href="mailto:${esc(l.email)}">Email</a>` : ''}<button class="btn danger sm" data-del="${l.id}" type="button">Delete</button>
+        <span class="confirm" data-confirm="${l.id}">Delete ${esc(l.fullName || 'this lead')}? <button class="btn danger sm" data-delyes="${l.id}" type="button">Yes, delete</button><button class="btn outline sm" data-delno="${l.id}" type="button">Keep</button></span></div>
+      </div></div>`; }).join('');
+}
+['f_q', 'f_type', 'f_stage', 'f_source', 'f_sort'].forEach((id) => $(id).addEventListener('input', renderLeads));
+async function patchLead(id, patch) { try { await fs.updateDoc(docRef(id), { ...patch, updatedAt: fs.serverTimestamp() }); toast('Saved'); } catch (e) { toast('Could not save. ' + friendlyError(e)); } }
+$('leadList').addEventListener('change', (e) => { const id = e.target.dataset.stage; if (id) patchLead(id, { status: e.target.value }); });
+$('leadList').addEventListener('click', async (e) => {
+  const b = e.target.closest('button'); if (!b) return; const d = b.dataset;
+  if (d.open) { b.closest('.ld').classList.toggle('open'); return; }
+  if (d.save) { const card = b.closest('.ld'); const patch = {}; card.querySelectorAll('[data-f]').forEach((el) => { patch[el.dataset.f] = el.value.trim(); }); patchLead(d.save, patch); return; }
+  if (d.copydm) { const l = leads.find((x) => x.id === d.copydm); const tpl = ($('tpl_follow') ? $('tpl_follow').value : TPLS().find((t) => t.k === 'follow').text).replace('[NAME]', (l.fullName || '').split(' ')[0] || 'there'); copyText(tpl); return; }
+  if (d.del) { $('leadList').querySelector(`[data-confirm="${d.del}"]`).classList.add('on'); return; }
+  if (d.delno) { $('leadList').querySelector(`[data-confirm="${d.delno}"]`).classList.remove('on'); return; }
+  if (d.delyes) { try { await fs.deleteDoc(docRef(d.delyes)); toast('Deleted'); } catch (err) { toast('Could not delete. ' + friendlyError(err)); } }
+});
+$('toggle-add').addEventListener('click', () => { const p = $('add-panel'); const show = p.style.display === 'none'; p.style.display = show ? 'block' : 'none'; $('toggle-add').textContent = show ? 'Hide' : 'Show'; if (show) $('l_name').focus(); });
+$('addLead').addEventListener('click', async () => {
+  const fullName = $('l_name').value.trim(), phone = $('l_phone').value.trim();
+  if (!fullName && !phone) { $('leadStatus').textContent = 'Enter at least a name or a phone number.'; return; }
+  const body = { type: 'Lead', fullName, phone, email: $('l_email').value.trim(), city: $('l_city').value.trim(), source: $('l_source').value, license: $('l_cdl').value, status: $('l_stage').value, next: $('l_next').value, notes: $('l_notes').value.trim(), createdAt: fs.serverTimestamp(), updatedAt: fs.serverTimestamp() };
+  $('addLead').disabled = true; $('leadStatus').textContent = '';
+  try { await fs.addDoc(col, body); ['l_name', 'l_phone', 'l_email', 'l_city', 'l_notes'].forEach((id) => { $(id).value = ''; }); $('l_stage').value = 'New'; $('l_next').value = addDays(2); toast('Lead added'); }
+  catch (e) { $('leadStatus').textContent = 'Could not save. ' + friendlyError(e); }
+  $('addLead').disabled = false;
+});
+$('export').addEventListener('click', () => {
+  if (!leads.length) { toast('Nothing to export yet'); return; }
+  const cols = ['createdAt', 'type', 'status', 'source', 'fullName', 'phone', 'email', 'city', 'organization', 'license', 'next', 'adminNotes', 'notes'];
+  const all = Array.from(new Set(cols.concat(...leads.map((l) => Object.keys(l))))).filter((c) => c !== 'id' && c !== 'updatedAt');
+  const csv = [all.map((c) => LABELS[c] || c).join(',')].concat(leads.map((l) => all.map((c) => '"' + String(Array.isArray(l[c]) ? l[c].join(', ') : (l[c] == null ? '' : l[c])).replace(/"/g, '""') + '"').join(','))).join('\r\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = 'leads-' + today() + '.csv'; a.click();
+});
 
-  $('rows').addEventListener('click', function (ev) {
-    var tr = ev.target.closest('tr.summary');
-    if (tr) tr.nextElementSibling.classList.toggle('open');
-  });
-  $('search').addEventListener('input', render);
-  $('refresh').addEventListener('click', function () { load(sessionStorage.getItem(SKEY) || ''); });
-  $('logout').addEventListener('click', function () {
-    try { sessionStorage.removeItem(SKEY); } catch (e) {}
-    location.reload();
-  });
-  $('export').addEventListener('click', function () {
-    if (!rows.length) return;
-    var cols = Object.keys(rows[0]);
-    var csv = [cols.join(',')].concat(rows.map(function (r) {
-      return cols.map(function (c) { return '"' + String(r[c] == null ? '' : r[c]).replace(/"/g, '""') + '"'; }).join(',');
-    })).join('\r\n');
-    var a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
-    a.download = 'applications-' + new Date().toISOString().slice(0, 10) + '.csv';
-    a.click();
-  });
-  $('login-form').addEventListener('submit', function (ev) { ev.preventDefault(); load($('key').value); });
-
-  var existing = null;
-  try { existing = sessionStorage.getItem(SKEY); } catch (e) {}
-  if (existing && endpoint) load(existing);
+/* ---------- company + checklist saves ---------- */
+$('saveCompany').addEventListener('click', async () => {
+  const data = readCompanyForm(); company = { ...DEFAULTS, ...data }; renderTemplates();
+  try { await fs.setDoc(fs.doc(db, 'settings', 'company'), data, { merge: true }); $('companyStatus').textContent = 'Saved and shared with every device you sign in on.'; toast('Details saved'); }
+  catch (e) { $('companyStatus').textContent = 'Could not save. ' + friendlyError(e); }
+});
+$('steps').addEventListener('change', async (e) => {
+  const k = e.target.dataset.step; if (!k) return;
+  checklist = { ...checklist, [k]: e.target.checked }; if (!checklist[k]) delete checklist[k]; renderSteps();
+  try { await fs.setDoc(fs.doc(db, 'settings', 'checklist'), { done: checklist }); } catch (err) { toast('Could not save. ' + friendlyError(err)); }
+});
 })();
 </script>
 </body>

@@ -1,0 +1,32 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Put the email of your admin login here. Only this account can read,
+    // change, or delete leads and settings.
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email in ['YOUR-ADMIN-EMAIL@waytogonj.com'];
+    }
+
+    function validLead() {
+      let d = request.resource.data;
+      return d.fullName is string && d.fullName.size() > 0 && d.fullName.size() <= 200
+        && d.phone is string && d.phone.size() <= 60
+        && d.status == 'New'
+        && d.createdAt is timestamp
+        && d.size() <= 40;
+    }
+
+    match /applications/{id} {
+      // Anyone may submit an application or inquiry from the website.
+      allow create: if validLead();
+      // Only the admin may see or change them.
+      allow read, update, delete: if isAdmin();
+    }
+
+    match /settings/{id} {
+      allow read, write: if isAdmin();
+    }
+  }
+}
