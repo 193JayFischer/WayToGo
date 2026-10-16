@@ -98,7 +98,27 @@
     .tpl textarea { min-height: 140px; font-size: .92rem; }
     #qrbox { background: #fff; padding: 8px; border-radius: 8px; width: fit-content; }
 
-    /* routine */
+    /* routine planner */
+    .progress { height: 10px; background: var(--bg-alt); border-radius: 999px; overflow: hidden; border: 1px solid var(--line); }
+    .progress div { height: 100%; width: 0; background: var(--yellow); transition: width .3s; }
+    .days { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+    .day { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; display: flex; flex-direction: column; gap: 10px; }
+    .day.today { border: 2px solid var(--blue); box-shadow: 0 8px 24px rgba(28,155,232,.15); }
+    .day.past { opacity: .75; }
+    .day .dh { display: flex; justify-content: space-between; align-items: baseline; }
+    .day .dh b { font-size: 1.1rem; }
+    .day .dh span { font-size: .8rem; color: var(--muted); font-weight: 600; }
+    .day .dh .tdy { color: var(--blue-dark); }
+    .task { display: grid; grid-template-columns: 24px 1fr auto; gap: 10px; align-items: start; padding: 8px 0; border-top: 1px solid var(--line); }
+    .task:first-of-type { border-top: 0; }
+    .task input { width: 20px; height: 20px; margin: 2px 0 0; }
+    .task.done label { text-decoration: line-through; color: var(--muted); }
+    .task label { font-size: .95rem; cursor: pointer; }
+    .task .act { display: flex; gap: 6px; }
+    .task .act button, .task .act a { font: 600 .75rem var(--font); padding: 5px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--bg-alt); color: var(--ink); cursor: pointer; white-space: nowrap; }
+    .task .act button:hover, .task .act a:hover { background: var(--yellow); }
+    .day.off { background: var(--bg-alt); }
+    /* routine (legacy table) */
     table { border-collapse: collapse; width: 100%; font-size: .92rem; }
     th, td { text-align: left; padding: 10px; border-top: 1px solid var(--line); vertical-align: top; }
     th { font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
@@ -240,30 +260,26 @@
   <!-- ROUTINE -->
   <section class="view" id="view-routine">
     <div class="panel">
-      <span class="eyebrow">Consistency beats budget</span>
-      <h2>Weekly posting routine</h2>
-      <p class="note">About 20 minutes a day on the company phone. Same text, rotated, so no platform goes quiet. Reply to every comment and message the same day. A driver who waits two days has already taken another job.</p>
-      <div class="tablewrap"><table>
-        <thead><tr><th>Day</th><th>Morning (after AM routes)</th><th>Afternoon (before PM routes)</th></tr></thead>
-        <tbody>
-          <tr><td>Monday</td><td>Refresh the Indeed post (edit the title or one line so it shows as updated). Post to the Facebook Page and Instagram from Business Suite.</td><td>Post in 3 Lakewood, Toms River, or Jackson Facebook jobs and community groups.</td></tr>
-          <tr><td>Tuesday</td><td>WhatsApp status and broadcast to the "Interested drivers" list. Check Indeed and ZipRecruiter candidates and text every new one.</td><td>Work the Leads tab: call everyone due today.</td></tr>
-          <tr><td>Wednesday</td><td>Instagram Reel or photo (a bus, a driver, the yard). Same clip to Facebook.</td><td>Post in 3 different groups (Jackson, Howell, Brick, Manchester).</td></tr>
-          <tr><td>Thursday</td><td>Referral reminder to current drivers (text template). Nextdoor and Google Business post.</td><td>Reply to every DM and comment. Update lead stages.</td></tr>
-          <tr><td>Friday</td><td>Craigslist and LinkedIn repost. ZipRecruiter check.</td><td>Call leads due this week who went quiet. Set next week's dates.</td></tr>
-          <tr><td>Sunday night</td><td colspan="2">Schedule next week's Facebook and Instagram posts in Meta Business Suite (10 minutes). Check the "Added this week" number in the Leads tab.</td></tr>
-        </tbody>
-      </table></div>
+      <div class="rowx" style="justify-content:space-between;align-items:flex-start">
+        <div>
+          <span class="eyebrow">About 20 minutes a day</span>
+          <h2 id="week-title">This week</h2>
+          <p class="note">Tick each task as you do it. The list resets every Monday. Reply to every comment and message the same day; a driver who waits two days has already taken another job.</p>
+        </div>
+        <div class="stat" style="min-width:150px;text-align:center"><b id="week-done">0/0</b><span>done this week</span></div>
+      </div>
+      <div class="progress"><div id="week-bar"></div></div>
     </div>
+    <div class="days" id="days"></div>
     <div class="panel">
       <h3>Rules that keep the money low</h3>
-      <div class="steps">
-        <div class="step"><div class="num">1</div><div><b>Free first, boost second.</b><p>Organic Indeed, Facebook groups, WhatsApp, Instagram, referrals and flyers are all free. Only boost a Facebook post ($5 a day, 5 days, Toms River + 15 miles) if a week of free posting brought fewer than 5 leads.</p></div></div>
-        <div class="step"><div class="num">2</div><div><b>Pay for ZipRecruiter only after the free trial proves it.</b><p>Count the leads it sends during the trial in the Leads tab (source = ZipRecruiter). Under 5 real leads, cancel before the trial ends.</p></div></div>
-        <div class="step"><div class="num">3</div><div><b>Referral bonus is the cheapest hire you will make.</b><p>Pay current drivers for every hire who lasts 90 days. It costs nothing until it works.</p></div></div>
-        <div class="step"><div class="num">4</div><div><b>Answer within the hour.</b><p>Keep WhatsApp Business and Indeed notifications on. Use the quick replies from the Posts tab so a reply takes 10 seconds.</p></div></div>
-        <div class="step"><div class="num">5</div><div><b>Recruit people without a CDL.</b><p>Most people who would be good drivers do not have a CDL yet. "Free training provided" is the one line that makes a post stand out. Say it in every post.</p></div></div>
-      </div>
+      <ul class="checks" style="margin-top:8px">
+        <li><b>Free first, boost second.</b> Only boost a Facebook post ($5 a day for 5 days, Toms River + 15 miles) if a week of free posting brought fewer than 5 leads.</li>
+        <li><b>Pay for ZipRecruiter only after the free trial proves it.</b> Under 5 real leads during the trial, cancel before it ends.</li>
+        <li><b>Referral bonus is the cheapest hire you will make.</b> Pay current drivers for every hire who lasts 90 days.</li>
+        <li><b>Answer within the hour.</b> Keep WhatsApp Business and Indeed notifications on and use the quick replies from the Posts tab.</li>
+        <li><b>Say "free training provided" in every post.</b> Most good drivers do not have a CDL yet.</li>
+      </ul>
     </div>
   </section>
 
@@ -295,7 +311,7 @@ const SOURCES = ['Website', 'Indeed', 'ZipRecruiter', 'Facebook post', 'Facebook
 const CDLS = ['Unknown', 'No CDL, willing to train', 'Has CDL, needs P/S', 'Has CDL with P & S'];
 const STAGES = ['New', 'Contacted', 'Interested', 'Interview set', 'Paperwork / training', 'Hired', 'Not now'];
 const CLOSED = ['Hired', 'Not now'];
-const LABELS = { type: 'Type', source: 'Source', fullName: 'Full name', organization: 'Organization', phone: 'Phone', email: 'Email', city: 'Town', zip: 'ZIP', within40: 'Within 40 min of Lakewood / Toms River', over21: 'At least 21', hasCdl: 'Holds CDL', cdlClass: 'CDL class', cdlState: 'License state', endorsements: 'Endorsements', cleanRecord: 'Clean driving record', experienceYears: 'School bus experience', lastEmployer: 'Most recent employer', otherExperience: 'Other passenger experience', positionType: 'Position wanted', shifts: 'Shifts', startDate: 'Earliest start', reliableTransport: 'Reliable transportation', canPass: 'Able to pass', hearAbout: 'Heard about us', referral: 'Referred by', notes: 'Their message / notes', consent: 'Consent', submittedFrom: 'Submitted from', license: 'License', next: 'Follow up on', adminNotes: 'Your notes', status: 'Stage' };
+const LABELS = { type: 'Type', source: 'Source', fullName: 'Full name', organization: 'Organization', phone: 'Phone', email: 'Email', city: 'Town', zip: 'ZIP', within40: 'Within 40 min of Lakewood / Toms River', over21: 'At least 21', hasCdl: 'Holds CDL', cdlClass: 'CDL class', cdlState: 'License state', endorsements: 'Endorsements', cleanRecord: 'Clean driving record', experienceYears: 'School bus experience', lastEmployer: 'Most recent employer', otherExperience: 'Other passenger experience', positionType: 'Position wanted', startDate: 'Earliest start', reliableTransport: 'Reliable transportation', canPass: 'Able to pass', hearAbout: 'Heard about us', referral: 'Referred by', notes: 'Their message / notes', consent: 'Consent', submittedFrom: 'Submitted from', license: 'License', next: 'Follow up on', adminNotes: 'Your notes', status: 'Stage' };
 const HIDDEN = new Set(['id', 'createdAt', 'updatedAt', 'status', 'next', 'adminNotes', 'license', 'source', 'type', 'fullName', 'phone', 'email', 'submittedFrom']);
 const opts = (arr, sel) => arr.map((v) => `<option ${v === sel ? 'selected' : ''}>${esc(v)}</option>`).join('');
 $('l_source').innerHTML = opts(SOURCES, 'Facebook post'); $('l_cdl').innerHTML = opts(CDLS); $('l_stage').innerHTML = opts(STAGES, 'New');
@@ -304,7 +320,7 @@ $('l_next').value = addDays(2);
 
 /* ---------- company details ---------- */
 const CFIELDS = ['phone', 'wa', 'email', 'contact', 'pay', 'bonus', 'cdl', 'hours'];
-const DEFAULTS = { phone: '732-608-1939', wa: '17326081939', email: 'info@waytogonj.com', contact: 'Ask for Jay', pay: '$22 to $28 per hour, based on experience and endorsements', bonus: 'Sign-on bonus opportunities and a referral bonus program', cdl: 'CDL with P and S endorsements preferred, not required. No CDL? Free training provided.', hours: 'AM routes, PM routes, and split shifts. Full-time, part-time, and on-call. Minimum hours guaranteed.' };
+const DEFAULTS = { phone: '732-608-1939', wa: '17326081939', email: 'info@waytogonj.com', contact: 'Ask for Jay', pay: '$22 to $28 per hour, based on experience and endorsements', bonus: 'Sign-on bonus opportunities and a referral bonus program', cdl: 'CDL with P and S endorsements preferred, not required. No CDL? Free training provided.', hours: 'Full-time, part-time, and on-call positions. Minimum hours guaranteed.' };
 let company = { ...DEFAULTS };
 const C = (k) => company[k] || '';
 function fillCompanyForm() { CFIELDS.forEach((k) => { $('c_' + k).value = company[k] || ''; }); }
@@ -326,7 +342,6 @@ What you get:
 • Steady routes close to home (Toms River, Lakewood, Jackson, Howell, Brick)
 • Minimum hours guaranteed
 • Free training, and help with your CDL and endorsements
-• Mornings and afternoons, so the middle of your day is yours
 • Extra hours on field trips and activity runs
 • A dispatch team that picks up the phone
 
@@ -343,7 +358,7 @@ ${C('pay')}${b1}
 ${C('hours')}
 ${C('cdl')}
 
-Mornings and afternoons, home in between. Retirees, parents, CDL holders who want to be home every night: this is the schedule you have been looking for.
+Steady work close to home. Retirees, parents, and CDL holders who want to be home every night: this is the job you have been looking for.
 
 📲 ${C('phone') ? 'Call or text ' + C('phone') : ''}
 📝 Apply in 5 minutes: ${APPLY_URL}
@@ -352,19 +367,19 @@ ${waLink() ? '💬 WhatsApp: ' + waLink() : ''}
 Share this with someone who would be a great driver. 🙏
 #LakewoodNJ #TomsRiver #OceanCountyJobs #BusDriver #CDLJobs #NowHiring #JacksonNJ #HowellNJ #WayToGoNJ` },
   { k: 'group', title: 'Facebook group post (short, community tone)', where: 'Local jobs and community groups. One group post a week each.', text:
-`Hi neighbors. Way To Go NJ (local school bus company, Toms River) is hiring CDL school bus drivers. ${C('pay')}. AM and PM routes, middle of the day free. ${C('cdl')} Great for retirees and parents. ${C('phone') ? 'Text ' + C('phone') : ''} or apply at ${APPLY_URL} and we will call you back the same day. Thanks for sharing!` },
+`Hi neighbors. Way To Go NJ (local school bus company, Toms River) is hiring CDL school bus drivers. ${C('pay')}. ${C('cdl')} Great for retirees and parents. ${C('phone') ? 'Text ' + C('phone') : ''} or apply at ${APPLY_URL} and we will call you back the same day. Thanks for sharing!` },
   { k: 'ig', title: 'Instagram Reel / Story caption', where: 'Short clip of the bus or yard. Put the apply link in the bio.', text:
-`We need drivers. Lakewood, Toms River and the surrounding towns. ${C('pay')}. Mornings and afternoons only. ${C('cdl')}
+`We need drivers. Lakewood, Toms River and the surrounding towns. ${C('pay')}. Minimum hours guaranteed. ${C('cdl')}
 Tap the link in bio or DM us "DRIVER" and we will text you today. 🚌
 #NowHiring #TomsRiver #BusDriver #CDL #LakewoodNJ` },
   { k: 'wa', title: 'WhatsApp status + broadcast message', where: 'Post as status every Tuesday. Send to the "Interested drivers" broadcast list.', text:
-`Way To Go NJ is hiring CDL school bus drivers in Toms River. ${C('pay')}. AM/PM routes, middle of the day free. ${C('cdl')} Reply to this message or ${C('phone') ? 'call ' + C('phone') : 'call us'} and we will get you started this week. Please forward to anyone looking for steady work. 🚌` },
+`Way To Go NJ is hiring CDL school bus drivers in Toms River. ${C('pay')}. Minimum hours guaranteed. ${C('cdl')} Reply to this message or ${C('phone') ? 'call ' + C('phone') : 'call us'} and we will get you started this week. Please forward to anyone looking for steady work. 🚌` },
   { k: 'dm', title: 'Direct message to a prospect (cold)', where: 'Someone who commented, liked, or is in a drivers group.', text:
-`Hi [NAME], this is ${C('contact') ? C('contact').replace(/^Ask for /i, '') : 'the hiring team'} from Way To Go NJ in Toms River. We are hiring CDL school bus drivers, ${C('pay')}, mornings and afternoons with the middle of the day free. ${C('cdl')} Would you be open to a 5-minute call this week? What time works for you?` },
+`Hi [NAME], this is ${C('contact') ? C('contact').replace(/^Ask for /i, '') : 'the hiring team'} from Way To Go NJ in Toms River. We are hiring CDL school bus drivers, ${C('pay')}. ${C('cdl')} Would you be open to a 5-minute call this week? What time works for you?` },
   { k: 'follow', title: 'Follow-up text (lead went quiet)', where: '3 days after first contact, then once more a week later.', text:
 `Hi [NAME], Way To Go NJ here. Still have a route open near you, ${C('pay')}. Want me to hold it for you while you decide? Reply YES and I will send the next step, or apply at ${APPLY_URL}. ${C('phone') ? '- ' + C('phone') : ''}` },
   { k: 'ref', title: 'Referral bonus text to current drivers', where: 'Every Thursday to your whole driver list.', text:
-`Team: we are still short on drivers. ${C('bonus') ? C('bonus') + '. ' : ''}Know anyone reliable who wants ${C('pay')} and a split schedule? Send them this link and tell them to put your name under "Referred by": ${APPLY_URL}. Thank you for helping us grow. - Way To Go NJ` },
+`Team: we are still short on drivers. ${C('bonus') ? C('bonus') + '. ' : ''}Know anyone reliable who wants ${C('pay')} and steady work close to home? Send them this link and tell them to put your name under "Referred by": ${APPLY_URL}. Thank you for helping us grow. - Way To Go NJ` },
   { k: 'quick', title: 'WhatsApp Business quick replies', where: 'Settings > Business tools > Quick replies. One per line pair.', text:
 `/pay → ${C('pay')}${b1}
 /hours → ${C('hours')}
@@ -440,6 +455,59 @@ function renderSteps() {
 }
 renderSteps();
 
+
+/* ---------- weekly planner ---------- */
+const PLAN = [
+  { d: 'Monday', tasks: [
+    { k: 'mon1', t: 'Refresh the Indeed post (edit the title or one line so it shows as updated).', open: 'https://employers.indeed.com/jobs' },
+    { k: 'mon2', t: 'Post to the Facebook Page and Instagram from Business Suite.', copy: 'fb', open: 'https://business.facebook.com/latest/home' },
+    { k: 'mon3', t: 'Post in 3 local Facebook groups (Lakewood, Toms River, Jackson).', copy: 'group', open: 'https://m.facebook.com/groups/' } ] },
+  { d: 'Tuesday', tasks: [
+    { k: 'tue1', t: 'Post the WhatsApp status and send the broadcast to interested drivers.', copy: 'wa' },
+    { k: 'tue2', t: 'Check Indeed and ZipRecruiter candidates. Text every new one.', open: 'https://employers.indeed.com/candidates' },
+    { k: 'tue3', t: 'Leads tab: call everyone due today.', tab: 'leads' } ] },
+  { d: 'Wednesday', tasks: [
+    { k: 'wed1', t: 'Instagram Reel or photo (a bus, a driver, the yard). Same clip to Facebook.', copy: 'ig', open: 'https://www.instagram.com/' },
+    { k: 'wed2', t: 'Post in 3 different groups (Howell, Brick, Manchester).', copy: 'group', open: 'https://m.facebook.com/groups/' } ] },
+  { d: 'Thursday', tasks: [
+    { k: 'thu1', t: 'Referral reminder to current drivers.', copy: 'ref' },
+    { k: 'thu2', t: 'Nextdoor and Google Business post.', copy: 'group', open: 'https://business.google.com/' },
+    { k: 'thu3', t: 'Reply to every DM and comment. Update lead stages.', tab: 'leads' } ] },
+  { d: 'Friday', tasks: [
+    { k: 'fri1', t: 'Craigslist and LinkedIn repost.', copy: 'cl', open: 'https://post.craigslist.org/c/jys' },
+    { k: 'fri2', t: 'Call leads from this week who went quiet. Set next week\'s follow-up dates.', tab: 'leads' } ] },
+  { d: 'Saturday', off: true, tasks: [
+    { k: 'sat1', t: 'Day off. Reply to messages only.' } ] },
+  { d: 'Sunday', tasks: [
+    { k: 'sun1', t: 'Schedule next week\'s Facebook and Instagram posts in Business Suite (10 minutes).', copy: 'fb', open: 'https://business.facebook.com/latest/home' },
+    { k: 'sun2', t: 'Check the "New this week" number in the Leads tab. Under 5? Boost one Facebook post.', tab: 'leads' } ] },
+];
+let routine = { week: '', done: {} };
+function weekKey() { const d = new Date(); const day = (d.getDay() + 6) % 7; const mon = new Date(d); mon.setDate(d.getDate() - day); mon.setHours(0,0,0,0); return mon.toISOString().slice(0, 10); }
+function weekDates() { const mon = new Date(weekKey() + 'T00:00:00'); return Array.from({ length: 7 }, (_, i) => { const x = new Date(mon); x.setDate(mon.getDate() + i); return x; }); }
+function renderRoutine() {
+  if (routine.week !== weekKey()) routine = { week: weekKey(), done: {} };
+  const dates = weekDates(); const todayIdx = (new Date().getDay() + 6) % 7;
+  const fmtD = (x) => x.toLocaleDateString([], { month: 'short', day: 'numeric' });
+  $('week-title').textContent = 'Week of ' + fmtD(dates[0]) + ' to ' + fmtD(dates[6]);
+  let total = 0, done = 0;
+  $('days').innerHTML = PLAN.map((day, i) => {
+    const cls = (i === todayIdx ? 'today' : i < todayIdx ? 'past' : '') + (day.off ? ' off' : '');
+    const tasks = day.tasks.map((t) => { if (!day.off) total++; const ok = !!routine.done[t.k]; if (ok && !day.off) done++;
+      const acts = [t.copy ? `<button type="button" data-rcopy="${t.copy}">Copy post</button>` : '', t.open ? `<a href="${t.open}" target="_blank" rel="noopener">Open</a>` : '', t.tab ? `<button type="button" data-rtab="${t.tab}">Go</button>` : ''].join('');
+      return `<div class="task ${ok ? 'done' : ''}"><input type="checkbox" id="r_${t.k}" data-rk="${t.k}" ${ok ? 'checked' : ''}><label for="r_${t.k}">${esc(t.t)}</label><div class="act">${acts}</div></div>`; }).join('');
+    return `<div class="day ${cls}"><div class="dh"><b>${day.d}</b><span class="${i === todayIdx ? 'tdy' : ''}">${i === todayIdx ? 'Today · ' : ''}${fmtD(dates[i])}</span></div>${tasks}</div>`;
+  }).join('');
+  $('week-done').textContent = done + '/' + total;
+  $('week-bar').style.width = (total ? Math.round(done / total * 100) : 0) + '%';
+}
+renderRoutine();
+$('days').addEventListener('click', (e) => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.rcopy) { const el = $('tpl_' + b.dataset.rcopy); copyText(el ? el.value : (TPLS().find((t) => t.k === b.dataset.rcopy) || {}).text || ''); }
+  if (b.dataset.rtab) showTab(b.dataset.rtab);
+});
+
 /* ---------- database ---------- */
 if (!isConfigured()) { $('login-off').style.display = 'block'; $('login-btn').disabled = true; return; }
 let fb;
@@ -466,6 +534,7 @@ function startListening() {
   }));
   unsubs.push(fs.onSnapshot(fs.doc(db, 'settings', 'company'), (snap) => { if (snap.exists()) { company = { ...DEFAULTS, ...snap.data() }; fillCompanyForm(); renderTemplates(); $('companyStatus').textContent = 'Loaded from the shared database.'; } }, () => {}));
   unsubs.push(fs.onSnapshot(fs.doc(db, 'settings', 'checklist'), (snap) => { if (snap.exists()) { checklist = snap.data().done || {}; renderSteps(); } }, () => {}));
+  unsubs.push(fs.onSnapshot(fs.doc(db, 'settings', 'routine'), (snap) => { if (snap.exists()) { const r = snap.data(); routine = { week: r.week || '', done: r.done || {} }; } renderRoutine(); }, () => {}));
 }
 function stopListening() { unsubs.forEach((u) => { try { u(); } catch (e) {} }); unsubs = []; }
 
@@ -563,6 +632,13 @@ $('saveCompany').addEventListener('click', async () => {
   const data = readCompanyForm(); company = { ...DEFAULTS, ...data }; renderTemplates();
   try { await fs.setDoc(fs.doc(db, 'settings', 'company'), data, { merge: true }); $('companyStatus').textContent = 'Saved and shared with every device you sign in on.'; toast('Details saved'); }
   catch (e) { $('companyStatus').textContent = 'Could not save. ' + friendlyError(e); }
+});
+$('days').addEventListener('change', async (e) => {
+  const k = e.target.dataset.rk; if (!k) return;
+  if (routine.week !== weekKey()) routine = { week: weekKey(), done: {} };
+  if (e.target.checked) routine.done[k] = true; else delete routine.done[k];
+  renderRoutine();
+  try { await fs.setDoc(fs.doc(db, 'settings', 'routine'), { week: routine.week, done: routine.done }); } catch (err) { toast('Could not save. ' + friendlyError(err)); }
 });
 $('steps').addEventListener('change', async (e) => {
   const k = e.target.dataset.step; if (!k) return;
