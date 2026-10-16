@@ -315,7 +315,7 @@ function waLink() { const n = (C('wa') || '').replace(/\D/g, ''); return n ? 'ht
 function contactLine() { const p = []; if (C('phone')) p.push('Call or text ' + C('phone') + (C('contact') ? ' (' + C('contact') + ')' : '')); p.push('Apply online: ' + APPLY_URL); if (waLink()) p.push('WhatsApp: ' + waLink()); if (C('email')) p.push('Email: ' + C('email')); return p.join('\n'); }
 function TPLS() { const bonus = C('bonus') ? C('bonus') + '\n' : ''; const b1 = C('bonus') ? ' ' + C('bonus') + '.' : ''; return [
   { k: 'indeed', title: 'Indeed / ZipRecruiter / LinkedIn job post', where: 'Full description. Title: School Bus Driver, Toms River NJ, Training Available', text:
-`WAY TO GO NJ LLC is hiring experienced and dependable CDL School Bus Drivers in Toms River, NJ. We are a growing school transportation company serving Lakewood and the surrounding areas, and we need reliable people now.
+`WAY TO GO NJ LLC is hiring experienced and dependable CDL School Bus Drivers in Toms River, NJ. We are a growing school transportation company serving Lakewood and the surrounding towns, and we need reliable people now.
 
 PAY: ${C('pay')}
 ${bonus}HOURS: ${C('hours')}
@@ -353,7 +353,7 @@ Share this with someone who would be a great driver. 🙏
   { k: 'group', title: 'Facebook group post (short, community tone)', where: 'Local jobs and community groups. One group post a week each.', text:
 `Hi neighbors. Way To Go NJ (local school bus company, Toms River) is hiring CDL school bus drivers. ${C('pay')}. AM and PM routes, middle of the day free. ${C('cdl')} Great for retirees and parents. ${C('phone') ? 'Text ' + C('phone') : ''} or apply at ${APPLY_URL} and we will call you back the same day. Thanks for sharing!` },
   { k: 'ig', title: 'Instagram Reel / Story caption', where: 'Short clip of the bus or yard. Put the apply link in the bio.', text:
-`We need drivers. Lakewood, Toms River and the surrounding areas. ${C('pay')}. Mornings and afternoons only. ${C('cdl')}
+`We need drivers. Lakewood, Toms River and the surrounding towns. ${C('pay')}. Mornings and afternoons only. ${C('cdl')}
 Tap the link in bio or DM us "DRIVER" and we will text you today. 🚌
 #NowHiring #TomsRiver #BusDriver #CDL #LakewoodNJ` },
   { k: 'wa', title: 'WhatsApp status + broadcast message', where: 'Post as status every Tuesday. Send to the "Interested drivers" broadcast list.', text:
