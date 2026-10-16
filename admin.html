@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin Portal</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%230b1a33'/%3E%3Cpath d='M18 22h28v22H18z' fill='%23ffc72c'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body { background: var(--bg-alt); }
+    .login { max-width: 420px; margin: 80px auto; }
+    .login h1 { font-size: 1.6rem; }
+    .toolbar { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin: 24px 0 16px; }
+    .toolbar input { max-width: 320px; }
+    .toolbar .spacer { flex: 1; }
+    .count { color: var(--muted); font-size: .95rem; }
+    table { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+    th, td { text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--line); font-size: .95rem; vertical-align: top; }
+    th { background: #f0f3f8; font-size: .8rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+    tr.summary { cursor: pointer; }
+    tr.summary:hover { background: #fbfcfe; }
+    tr.detail { display: none; background: #fafbfd; }
+    tr.detail.open { display: table-row; }
+    .kv { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px 24px; }
+    .kv div b { display: block; font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+    .pill { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: .8rem; font-weight: 600; background: #eef3ff; color: #1b3a80; }
+    .pill.src { background: #fff4cc; color: #7a5a00; }
+    .table-wrap { overflow-x: auto; }
+    @media (max-width: 720px) { th.opt, td.opt { display: none; } }
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap">
+    <a class="logo" href="index.html">Way To Go <span>NJ</span> <span style="color:#c9d4ea;font-weight:500;font-size:.9rem;margin-left:8px">Admin</span></a>
+    <button class="btn outline" id="logout" style="display:none;color:#fff;border-color:rgba(255,255,255,.4)">Log out</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <div id="login" class="login form-card">
+    <h1>Admin access</h1>
+    <p class="lead" style="font-size:1rem">Enter the admin key to view driver applications.</p>
+    <div id="login-off" class="notice err" style="display:none">The admin portal is not switched on yet. Finish SETUP.md first.</div>
+    <form id="login-form">
+      <div class="field"><label for="key">Admin key</label><input id="key" type="password" autocomplete="current-password" required></div>
+      <div id="login-error" class="notice err" style="display:none"></div>
+      <button class="btn blue" type="submit" id="login-btn">Open portal</button>
+    </form>
+  </div>
+
+  <div id="portal" style="display:none">
+    <div class="toolbar">
+      <input type="text" id="search" placeholder="Search name, phone, email, city, source">
+      <span class="count" id="count"></span>
+      <span class="spacer"></span>
+      <button class="btn outline" id="refresh">Refresh</button>
+      <button class="btn" id="export">Download CSV</button>
+    </div>
+    <div id="portal-error" class="notice err" style="display:none"></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Received</th><th>Name</th><th>Phone</th><th class="opt">Email</th><th class="opt">Position</th><th class="opt">CDL</th><th>Source</th>
+        </tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script>
+(function () {
+  var endpoint = (window.WTG_CONFIG && window.WTG_CONFIG.endpoint || '').trim();
+  var SKEY = 'wtg-admin-key';
+  var rows = [];
+  var $ = function (id) { return document.getElementById(id); };
+
+  if (!endpoint) { $('login-off').style.display = 'block'; $('login-btn').disabled = true; }
+
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function fmtDate(v) { var d = new Date(v); return isNaN(d) ? esc(v) : d.toLocaleString(); }
+
+  function load(key) {
+    $('login-error').style.display = 'none';
+    $('portal-error').style.display = 'none';
+    $('login-btn').disabled = true; $('login-btn').textContent = 'Checking...';
+    return fetch(endpoint + '?action=list&key=' + encodeURIComponent(key), { redirect: 'follow' })
+      .then(function (r) { return r.json(); })
+      .then(function (res) {
+        if (!res || !res.ok) throw new Error(res && res.error || 'Could not load');
+        rows = res.rows || [];
+        try { sessionStorage.setItem(SKEY, key); } catch (e) {}
+        $('login').style.display = 'none';
+        $('portal').style.display = 'block';
+        $('logout').style.display = 'inline-flex';
+        render();
+      })
+      .catch(function (err) {
+        var msg = /unauthori/i.test(err.message) ? 'That key is not correct.' : 'Could not reach the applications store. ' + err.message;
+        if ($('portal').style.display === 'block') { $('portal-error').textContent = msg; $('portal-error').style.display = 'block'; }
+        else { $('login-error').textContent = msg; $('login-error').style.display = 'block'; }
+      })
+      .then(function () { $('login-btn').disabled = false; $('login-btn').textContent = 'Open portal'; });
+  }
+
+  function render() {
+    var q = $('search').value.trim().toLowerCase();
+    var list = rows.filter(function (r) {
+      if (!q) return true;
+      return ['Full name', 'Phone', 'Email', 'City', 'Source'].some(function (k) { return String(r[k] || '').toLowerCase().indexOf(q) !== -1; });
+    });
+    $('count').textContent = list.length + ' of ' + rows.length + ' applications';
+    var html = '';
+    list.forEach(function (r, i) {
+      html += '<tr class="summary" data-i="' + i + '">' +
+        '<td>' + fmtDate(r['Received']) + '</td>' +
+        '<td><b>' + esc(r['Full name']) + '</b><br><span class="count">' + esc(r['City']) + '</span></td>' +
+        '<td><a href="tel:' + esc(r['Phone']) + '">' + esc(r['Phone']) + '</a></td>' +
+        '<td class="opt"><a href="mailto:' + esc(r['Email']) + '">' + esc(r['Email']) + '</a></td>' +
+        '<td class="opt">' + esc(r['Position wanted']) + '</td>' +
+        '<td class="opt">' + esc(r['Holds CDL']) + '</td>' +
+        '<td><span class="pill src">' + esc(r['Source'] || 'Website') + '</span></td>' +
+        '</tr><tr class="detail"><td colspan="7"><div class="kv">';
+      Object.keys(r).forEach(function (k) {
+        if (k === 'Received') return;
+        var v = r[k]; if (v === '' || v == null) return;
+        html += '<div><b>' + esc(k) + '</b>' + esc(v) + '</div>';
+      });
+      html += '</div></td></tr>';
+    });
+    $('rows').innerHTML = html || '<tr><td colspan="7" class="count">No applications yet.</td></tr>';
+  }
+
+  $('rows').addEventListener('click', function (ev) {
+    var tr = ev.target.closest('tr.summary');
+    if (tr) tr.nextElementSibling.classList.toggle('open');
+  });
+  $('search').addEventListener('input', render);
+  $('refresh').addEventListener('click', function () { load(sessionStorage.getItem(SKEY) || ''); });
+  $('logout').addEventListener('click', function () {
+    try { sessionStorage.removeItem(SKEY); } catch (e) {}
+    location.reload();
+  });
+  $('export').addEventListener('click', function () {
+    if (!rows.length) return;
+    var cols = Object.keys(rows[0]);
+    var csv = [cols.join(',')].concat(rows.map(function (r) {
+      return cols.map(function (c) { return '"' + String(r[c] == null ? '' : r[c]).replace(/"/g, '""') + '"'; }).join(',');
+    })).join('\r\n');
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+    a.download = 'applications-' + new Date().toISOString().slice(0, 10) + '.csv';
+    a.click();
+  });
+  $('login-form').addEventListener('submit', function (ev) { ev.preventDefault(); load($('key').value); });
+
+  var existing = null;
+  try { existing = sessionStorage.getItem(SKEY); } catch (e) {}
+  if (existing && endpoint) load(existing);
+})();
+</script>
+</body>
+</html>

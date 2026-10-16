@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Driver Application</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23ffc72c'/%3E%3Cpath d='M18 22h28v22H18z' fill='%230b1a33'/%3E%3Ccircle cx='24' cy='46' r='4' fill='%23ffc72c'/%3E%3Ccircle cx='40' cy='46' r='4' fill='%23ffc72c'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body { background: var(--bg-alt); }
+    .intro { padding: 44px 0 20px; }
+    .saved { font-size: .85rem; color: var(--muted); text-align: right; min-height: 1.2em; margin-top: 8px; }
+    #thanks { display: none; text-align: center; padding: 48px 24px; }
+    #thanks h2 { font-size: 2rem; }
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap">
+    <a class="logo" href="index.html">Way To Go <span>NJ</span></a>
+    <a class="btn outline" style="color:#fff;border-color:rgba(255,255,255,.4)" href="drive.html">Back to job details</a>
+  </div>
+</header>
+
+<section class="intro">
+  <div class="wrap">
+    <h1>Driver application</h1>
+    <p class="lead">CDL School Bus Driver, Toms River, NJ. This takes about five minutes. Your answers are saved on this device as you go, so you can leave and come back.</p>
+  </div>
+</section>
+
+<section style="padding-top:0">
+  <div class="wrap">
+    <div id="resume" class="notice info" style="display:none">
+      We saved your progress from <span id="resume-when"></span>. Pick up where you left off, or <a href="#" id="start-over">start over</a>.
+    </div>
+    <div id="off" class="notice err" style="display:none">
+      Applications are not switched on yet. Please check back shortly.
+    </div>
+
+    <form id="app-form" class="form-card" novalidate>
+      <div class="hp" aria-hidden="true">
+        <label>Leave this empty <input type="text" name="website" tabindex="-1" autocomplete="off"></label>
+      </div>
+
+      <fieldset>
+        <legend>Contact information</legend>
+        <div class="row">
+          <div class="field"><label for="fullName">Full name *</label><input id="fullName" name="fullName" type="text" required autocomplete="name"></div>
+          <div class="field"><label for="phone">Phone *</label><input id="phone" name="phone" type="tel" required autocomplete="tel"></div>
+        </div>
+        <div class="row">
+          <div class="field"><label for="email">Email *</label><input id="email" name="email" type="email" required autocomplete="email"></div>
+          <div class="field"><label for="city">City / town *</label><input id="city" name="city" type="text" required autocomplete="address-level2"></div>
+        </div>
+        <div class="row">
+          <div class="field"><label for="zip">ZIP code</label><input id="zip" name="zip" type="text" inputmode="numeric" autocomplete="postal-code"></div>
+          <div class="field">
+            <label>Are you at least 21 years old? *</label>
+            <div class="choices">
+              <label><input type="radio" name="over21" value="Yes" required> Yes</label>
+              <label><input type="radio" name="over21" value="No"> No</label>
+            </div>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Licensing</legend>
+        <div class="field">
+          <label>Do you currently hold a CDL? *</label>
+          <div class="choices">
+            <label><input type="radio" name="hasCdl" value="Yes" required> Yes</label>
+            <label><input type="radio" name="hasCdl" value="No, I would like training"> No, I would like training</label>
+            <label><input type="radio" name="hasCdl" value="In progress"> In progress</label>
+          </div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label for="cdlClass">CDL class</label>
+            <select id="cdlClass" name="cdlClass">
+              <option value="">Select</option>
+              <option>Class A</option><option>Class B</option><option>Class C</option><option>None yet</option>
+            </select>
+          </div>
+          <div class="field"><label for="cdlState">License state</label><input id="cdlState" name="cdlState" type="text" placeholder="NJ"></div>
+        </div>
+        <div class="field">
+          <label>Endorsements you hold</label>
+          <div class="choices">
+            <label><input type="checkbox" name="endorsements" value="P (Passenger)"> P (Passenger)</label>
+            <label><input type="checkbox" name="endorsements" value="S (School Bus)"> S (School Bus)</label>
+            <label><input type="checkbox" name="endorsements" value="None yet"> None yet</label>
+          </div>
+        </div>
+        <div class="field">
+          <label>Do you have a clean driving record? *</label>
+          <div class="choices">
+            <label><input type="radio" name="cleanRecord" value="Yes" required> Yes</label>
+            <label><input type="radio" name="cleanRecord" value="No"> No</label>
+          </div>
+          <span class="hint">If no, you can explain in the notes at the end.</span>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Experience</legend>
+        <div class="row">
+          <div class="field">
+            <label for="experienceYears">Years of school bus driving experience</label>
+            <select id="experienceYears" name="experienceYears">
+              <option value="">Select</option>
+              <option>None</option><option>Less than 1 year</option><option>1 to 2 years</option><option>3 to 5 years</option><option>More than 5 years</option>
+            </select>
+          </div>
+          <div class="field"><label for="lastEmployer">Most recent driving employer</label><input id="lastEmployer" name="lastEmployer" type="text"></div>
+        </div>
+        <div class="field">
+          <label for="otherExperience">Other experience transporting students or passengers</label>
+          <textarea id="otherExperience" name="otherExperience" placeholder="Vans, shuttles, transit, paratransit, and so on"></textarea>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Availability</legend>
+        <div class="field">
+          <label>Position you want *</label>
+          <div class="choices">
+            <label><input type="radio" name="positionType" value="Full time" required> Full time</label>
+            <label><input type="radio" name="positionType" value="Part time"> Part time</label>
+            <label><input type="radio" name="positionType" value="Roster / on call"> Roster / on call</label>
+          </div>
+        </div>
+        <div class="field">
+          <label>Shifts you can work</label>
+          <div class="choices">
+            <label><input type="checkbox" name="shifts" value="AM routes"> AM routes</label>
+            <label><input type="checkbox" name="shifts" value="PM routes"> PM routes</label>
+            <label><input type="checkbox" name="shifts" value="Split shifts"> Split shifts</label>
+            <label><input type="checkbox" name="shifts" value="Field trips / activities"> Field trips / activities</label>
+          </div>
+        </div>
+        <div class="row">
+          <div class="field"><label for="startDate">Earliest start date</label><input id="startDate" name="startDate" type="date"></div>
+          <div class="field">
+            <label>Reliable transportation to work? *</label>
+            <div class="choices">
+              <label><input type="radio" name="reliableTransport" value="Yes" required> Yes</label>
+              <label><input type="radio" name="reliableTransport" value="No"> No</label>
+            </div>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Screening</legend>
+        <div class="field">
+          <label>I am able to pass the following *</label>
+          <div class="choices">
+            <label><input type="checkbox" name="canPass" value="DOT physical"> DOT physical</label>
+            <label><input type="checkbox" name="canPass" value="Drug screening"> Drug screening</label>
+            <label><input type="checkbox" name="canPass" value="Fingerprinting"> Fingerprinting</label>
+            <label><input type="checkbox" name="canPass" value="Criminal background check"> Criminal background check</label>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Anything else</legend>
+        <div class="row">
+          <div class="field">
+            <label for="hearAbout">How did you hear about us?</label>
+            <select id="hearAbout" name="hearAbout">
+              <option value="">Select</option>
+              <option>Facebook</option><option>Instagram</option><option>Indeed</option><option>Google</option><option>Referral from a driver</option><option>Saw a bus or sign</option><option>Other</option>
+            </select>
+          </div>
+          <div class="field"><label for="referral">Referred by (name)</label><input id="referral" name="referral" type="text"></div>
+        </div>
+        <div class="field">
+          <label for="notes">Notes</label>
+          <textarea id="notes" name="notes" placeholder="Anything you want us to know"></textarea>
+        </div>
+        <div class="field">
+          <div class="choices">
+            <label><input type="checkbox" name="consent" value="Yes" required> I confirm the information above is accurate and I agree to be contacted about this position. *</label>
+          </div>
+        </div>
+      </fieldset>
+
+      <div id="form-error" class="notice err" style="display:none"></div>
+      <button class="btn big blue" id="submit-btn" type="submit">Submit application</button>
+      <div class="saved" id="saved"></div>
+    </form>
+
+    <div id="thanks" class="form-card">
+      <h2>Thank you, <span id="thanks-name"></span>.</h2>
+      <p class="lead" style="margin:0 auto 24px">Your application is in. We will reach out by phone or email soon.</p>
+      <a class="btn" href="index.html">Back to home</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span>&copy; <span id="year"></span> WAY TO GO NJ LLC</span>
+    <span><a href="drive.html">Job details</a></span>
+  </div>
+</footer>
+
+<script src="config.js"></script>
+<script>
+(function () {
+  document.getElementById('year').textContent = new Date().getFullYear();
+  var KEY = 'wtg-application-draft';
+  var form = document.getElementById('app-form');
+  var savedEl = document.getElementById('saved');
+  var endpoint = (window.WTG_CONFIG && window.WTG_CONFIG.endpoint || '').trim();
+
+  if (!endpoint) document.getElementById('off').style.display = 'block';
+
+  function collect() {
+    var data = {};
+    Array.prototype.forEach.call(form.elements, function (el) {
+      if (!el.name || el.name === 'website') return;
+      if (el.type === 'checkbox') {
+        if (!data[el.name]) data[el.name] = [];
+        if (el.checked) data[el.name].push(el.value);
+      } else if (el.type === 'radio') {
+        if (el.checked) data[el.name] = el.value;
+      } else if (el.tagName !== 'BUTTON') {
+        data[el.name] = el.value;
+      }
+    });
+    return data;
+  }
+
+  function fill(data) {
+    Array.prototype.forEach.call(form.elements, function (el) {
+      if (!el.name || !(el.name in data)) return;
+      var v = data[el.name];
+      if (el.type === 'checkbox') el.checked = Array.isArray(v) && v.indexOf(el.value) !== -1;
+      else if (el.type === 'radio') el.checked = (v === el.value);
+      else if (el.tagName !== 'BUTTON') el.value = v;
+    });
+  }
+
+  var timer, submitted = false;
+  function save() {
+    clearTimeout(timer);
+    if (submitted) return;
+    timer = setTimeout(function () {
+      try {
+        localStorage.setItem(KEY, JSON.stringify({ savedAt: new Date().toISOString(), data: collect() }));
+        savedEl.textContent = 'Progress saved on this device.';
+      } catch (e) {}
+    }, 300);
+  }
+  form.addEventListener('input', save);
+  form.addEventListener('change', save);
+
+  try {
+    var draft = JSON.parse(localStorage.getItem(KEY) || 'null');
+    if (draft && draft.data) {
+      fill(draft.data);
+      var when = new Date(draft.savedAt);
+      document.getElementById('resume-when').textContent = when.toLocaleString();
+      document.getElementById('resume').style.display = 'block';
+    }
+  } catch (e) {}
+
+  document.getElementById('start-over').addEventListener('click', function (ev) {
+    ev.preventDefault();
+    try { localStorage.removeItem(KEY); } catch (e) {}
+    form.reset();
+    document.getElementById('resume').style.display = 'none';
+    savedEl.textContent = '';
+  });
+
+  function showError(msg) {
+    var box = document.getElementById('form-error');
+    box.textContent = msg;
+    box.style.display = 'block';
+    box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  form.addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    document.getElementById('form-error').style.display = 'none';
+
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      var bad = form.querySelector(':invalid');
+      if (bad) bad.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+    var data = collect();
+    if (!data.canPass || !data.canPass.length) {
+      showError('Please tick at least one item under Screening.');
+      return;
+    }
+    if (!endpoint) {
+      showError('Applications are not switched on yet. Your answers are saved on this device. Please try again later.');
+      return;
+    }
+
+    data.source = 'Website';
+    data.submittedFrom = location.href;
+    var btn = document.getElementById('submit-btn');
+    btn.disabled = true;
+    btn.textContent = 'Sending...';
+
+    fetch(endpoint, { method: 'POST', body: JSON.stringify(data), redirect: 'follow' })
+      .then(function (r) { return r.json(); })
+      .then(function (res) {
+        if (!res || !res.ok) throw new Error(res && res.error || 'Server rejected the application');
+        submitted = true;
+        clearTimeout(timer);
+        try { localStorage.removeItem(KEY); } catch (e) {}
+        document.getElementById('thanks-name').textContent = (data.fullName || '').split(' ')[0];
+        form.style.display = 'none';
+        document.getElementById('resume').style.display = 'none';
+        document.getElementById('thanks').style.display = 'block';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      })
+      .catch(function (err) {
+        showError('We could not send your application. Your answers are still saved on this device. Please try again in a moment. (' + err.message + ')');
+        btn.disabled = false;
+        btn.textContent = 'Submit application';
+      });
+  });
+})();
+</script>
+</body>
+</html>
