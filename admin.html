@@ -215,7 +215,7 @@
         <div class="field"><label for="c_email">Hiring email</label><input id="c_email"></div>
         <div class="field"><label for="c_contact">Who to ask for</label><input id="c_contact"></div>
         <div class="field"><label for="c_pay">Pay line</label><input id="c_pay"></div>
-        <div class="field"><label for="c_bonus">Sign-on / referral bonus</label><input id="c_bonus"></div>
+        <div class="field"><label for="c_bonus">Bonus line (leave empty if none)</label><input id="c_bonus"></div>
         <div class="field span2"><label for="c_cdl">License line</label><input id="c_cdl"></div>
         <div class="field span2"><label for="c_hours">Hours line</label><input id="c_hours"></div>
       </div>
@@ -276,7 +276,7 @@
       <ul class="checks" style="margin-top:8px">
         <li><b>Free first, boost second.</b> Only boost a Facebook post ($5 a day for 5 days, Toms River + 15 miles) if a week of free posting brought fewer than 5 leads.</li>
         <li><b>Pay for ZipRecruiter only after the free trial proves it.</b> Under 5 real leads during the trial, cancel before it ends.</li>
-        <li><b>Referral bonus is the cheapest hire you will make.</b> Pay current drivers for every hire who lasts 90 days.</li>
+        <li><b>Referrals are the cheapest hires you will make.</b> Ask current drivers every Thursday to send the apply link to someone reliable.</li>
         <li><b>Answer within the hour.</b> Keep WhatsApp Business and Indeed notifications on and use the quick replies from the Posts tab.</li>
         <li><b>Say "free training provided" in every post.</b> Most good drivers do not have a CDL yet.</li>
       </ul>
@@ -320,7 +320,7 @@ $('l_next').value = addDays(2);
 
 /* ---------- company details ---------- */
 const CFIELDS = ['phone', 'wa', 'email', 'contact', 'pay', 'bonus', 'cdl', 'hours'];
-const DEFAULTS = { phone: '732-608-1939', wa: '17326081939', email: 'info@waytogonj.com', contact: 'Ask for Jay', pay: '$22 to $28 per hour, based on experience and endorsements', bonus: 'Sign-on bonus opportunities and a referral bonus program', cdl: 'CDL with P and S endorsements preferred, not required. No CDL? Free training provided.', hours: 'Full-time, part-time, and on-call positions. Minimum hours guaranteed.' };
+const DEFAULTS = { phone: '732-608-1939', wa: '17326081939', email: 'info@waytogonj.com', contact: 'Ask for Jay', pay: '$22 to $28 per hour, based on experience and endorsements', bonus: '', cdl: 'CDL with P and S endorsements preferred, not required. No CDL? Free training provided.', hours: 'Full-time, part-time, and on-call positions. Minimum hours guaranteed.' };
 let company = { ...DEFAULTS };
 const C = (k) => company[k] || '';
 function fillCompanyForm() { CFIELDS.forEach((k) => { $('c_' + k).value = company[k] || ''; }); }
@@ -378,8 +378,8 @@ Tap the link in bio or DM us "DRIVER" and we will text you today. 🚌
 `Hi [NAME], this is ${C('contact') ? C('contact').replace(/^Ask for /i, '') : 'the hiring team'} from Way To Go NJ in Toms River. We are hiring CDL school bus drivers, ${C('pay')}. ${C('cdl')} Would you be open to a 5-minute call this week? What time works for you?` },
   { k: 'follow', title: 'Follow-up text (lead went quiet)', where: '3 days after first contact, then once more a week later.', text:
 `Hi [NAME], Way To Go NJ here. Still have a route open near you, ${C('pay')}. Want me to hold it for you while you decide? Reply YES and I will send the next step, or apply at ${APPLY_URL}. ${C('phone') ? '- ' + C('phone') : ''}` },
-  { k: 'ref', title: 'Referral bonus text to current drivers', where: 'Every Thursday to your whole driver list.', text:
-`Team: we are still short on drivers. ${C('bonus') ? C('bonus') + '. ' : ''}Know anyone reliable who wants ${C('pay')} and steady work close to home? Send them this link and tell them to put your name under "Referred by": ${APPLY_URL}. Thank you for helping us grow. - Way To Go NJ` },
+  { k: 'ref', title: 'Referral text to current drivers', where: 'Every Thursday to your whole driver list.', text:
+`Team: we are still short on drivers. Know anyone reliable who wants ${C('pay')} and steady work close to home? Send them this link and tell them to put your name under "Referred by": ${APPLY_URL}. Thank you for helping us grow. - Way To Go NJ` },
   { k: 'quick', title: 'WhatsApp Business quick replies', where: 'Settings > Business tools > Quick replies. One per line pair.', text:
 `/pay → ${C('pay')}${b1}
 /hours → ${C('hours')}
@@ -444,7 +444,7 @@ const STEPS = [
   { k: 'gbp', t: 'Add a "We are hiring" post to Google Business Profile', cost: 'free', p: 'Anyone who searches Way To Go NJ sees it. Use the short template and the apply link.', links: [['Google Business Profile', 'https://business.google.com/']] },
   { k: 'onestop', t: 'List the job with the NJ One-Stop Career Center (Ocean County)', cost: 'free', p: 'State job boards and career counselors send CDL and transportation candidates to listed employers at no cost. Call or email the Ocean County One-Stop and send them the Indeed text.', links: [['NJ Career Services', 'https://www.nj.gov/labor/career-services/']] },
   { k: 'flyer', t: 'Print 50 flyers with the QR code', cost: 'under $20', p: 'Half page, big pay line, the QR code from the Posts tab, phone number in large type. Places: gas stations, laundromats, supermarkets, CDL schools, bus and truck yards, community bulletin boards, pizza shops near the industrial park. Ask every current driver to take 5.' },
-  { k: 'referral', t: 'Text every current driver the referral bonus message', cost: 'free', p: 'Drivers know drivers. The referral template is in the Posts tab. Repeat it every Thursday.' },
+  { k: 'referral', t: 'Text every current driver the referral message', cost: 'free', p: 'Drivers know drivers. The referral template is in the Posts tab. Repeat it every Thursday.' },
   { k: 'schedule', t: 'Schedule the first week of posts in Meta Business Suite', cost: 'free', p: 'Sunday night, 10 minutes: one Facebook and Instagram post per day for the week, rotating the three social templates. Then follow the Routine tab.' },
 ];
 let checklist = {};
@@ -470,7 +470,7 @@ const PLAN = [
     { k: 'wed1', t: 'Instagram Reel or photo (a bus, a driver, the yard). Same clip to Facebook.', copy: 'ig', open: 'https://www.instagram.com/' },
     { k: 'wed2', t: 'Post in 3 different groups (Howell, Brick, Manchester).', copy: 'group', open: 'https://m.facebook.com/groups/' } ] },
   { d: 'Thursday', tasks: [
-    { k: 'thu1', t: 'Referral reminder to current drivers.', copy: 'ref' },
+    { k: 'thu1', t: 'Referral text to current drivers.', copy: 'ref' },
     { k: 'thu2', t: 'Nextdoor and Google Business post.', copy: 'group', open: 'https://business.google.com/' },
     { k: 'thu3', t: 'Reply to every DM and comment. Update lead stages.', tab: 'leads' } ] },
   { d: 'Friday', tasks: [
