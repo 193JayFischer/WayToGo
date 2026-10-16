@@ -109,12 +109,12 @@
     .day .dh b { font-size: 1.1rem; }
     .day .dh span { font-size: .8rem; color: var(--muted); font-weight: 600; }
     .day .dh .tdy { color: var(--blue-dark); }
-    .task { display: grid; grid-template-columns: 24px 1fr auto; gap: 10px; align-items: start; padding: 8px 0; border-top: 1px solid var(--line); }
+    .task { display: grid; grid-template-columns: 24px 1fr; gap: 6px 10px; align-items: start; padding: 10px 0; border-top: 1px solid var(--line); }
     .task:first-of-type { border-top: 0; }
     .task input { width: 20px; height: 20px; margin: 2px 0 0; }
     .task.done label { text-decoration: line-through; color: var(--muted); }
     .task label { font-size: .95rem; cursor: pointer; }
-    .task .act { display: flex; gap: 6px; }
+    .task .act { display: flex; gap: 6px; grid-column: 2; }
     .task .act button, .task .act a { font: 600 .75rem var(--font); padding: 5px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--bg-alt); color: var(--ink); cursor: pointer; white-space: nowrap; }
     .task .act button:hover, .task .act a:hover { background: var(--yellow); }
     .day.off { background: var(--bg-alt); }
