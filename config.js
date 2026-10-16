@@ -11,6 +11,7 @@ window.WTG_CONFIG = {
     tiktok: "",
     linkedin: "",
     youtube: "",
+    nextdoor: "",
     whatsapp: "https://wa.me/17326081939",
     indeed: "",
     x: ""
