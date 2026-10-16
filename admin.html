@@ -262,7 +262,7 @@
         <div class="step"><div class="num">2</div><div><b>Pay for ZipRecruiter only after the free trial proves it.</b><p>Count the leads it sends during the trial in the Leads tab (source = ZipRecruiter). Under 5 real leads, cancel before the trial ends.</p></div></div>
         <div class="step"><div class="num">3</div><div><b>Referral bonus is the cheapest hire you will make.</b><p>Pay current drivers for every hire who lasts 90 days. It costs nothing until it works.</p></div></div>
         <div class="step"><div class="num">4</div><div><b>Answer within the hour.</b><p>Keep WhatsApp Business and Indeed notifications on. Use the quick replies from the Posts tab so a reply takes 10 seconds.</p></div></div>
-        <div class="step"><div class="num">5</div><div><b>Recruit people without a CDL.</b><p>Most people who would be good drivers do not have a CDL yet. "Training available" is the one line that makes a post stand out. Say it in every post.</p></div></div>
+        <div class="step"><div class="num">5</div><div><b>Recruit people without a CDL.</b><p>Most people who would be good drivers do not have a CDL yet. "Free training available" is the one line that makes a post stand out. Say it in every post.</p></div></div>
       </div>
     </div>
   </section>
@@ -304,7 +304,7 @@ $('l_next').value = addDays(2);
 
 /* ---------- company details ---------- */
 const CFIELDS = ['phone', 'wa', 'email', 'contact', 'pay', 'bonus', 'cdl', 'hours'];
-const DEFAULTS = { phone: '732-608-1939', wa: '17326081939', email: 'info@waytogonj.com', contact: 'Ask for Jay', pay: '$22 to $28 per hour, based on experience and endorsements', bonus: 'Sign-on bonus opportunities and a referral bonus program', cdl: 'CDL with P and S endorsements preferred, not required. No CDL? Training available.', hours: 'AM routes, PM routes, and split shifts. Full-time, part-time, and on-call. Minimum hours guaranteed.' };
+const DEFAULTS = { phone: '732-608-1939', wa: '17326081939', email: 'info@waytogonj.com', contact: 'Ask for Jay', pay: '$22 to $28 per hour, based on experience and endorsements', bonus: 'Sign-on bonus opportunities and a referral bonus program', cdl: 'CDL with P and S endorsements preferred, not required. No CDL? Free training available.', hours: 'AM routes, PM routes, and split shifts. Full-time, part-time, and on-call. Minimum hours guaranteed.' };
 let company = { ...DEFAULTS };
 const C = (k) => company[k] || '';
 function fillCompanyForm() { CFIELDS.forEach((k) => { $('c_' + k).value = company[k] || ''; }); }
@@ -315,7 +315,7 @@ fillCompanyForm();
 function waLink() { const n = (C('wa') || '').replace(/\D/g, ''); return n ? 'https://wa.me/' + n + '?text=' + encodeURIComponent("Hi, I'm interested in driving for Way To Go NJ.") : ''; }
 function contactLine() { const p = []; if (C('phone')) p.push('Call or text ' + C('phone') + (C('contact') ? ' (' + C('contact') + ')' : '')); p.push('Apply online: ' + APPLY_URL); if (waLink()) p.push('WhatsApp: ' + waLink()); if (C('email')) p.push('Email: ' + C('email')); return p.join('\n'); }
 function TPLS() { const bonus = C('bonus') ? C('bonus') + '\n' : ''; const b1 = C('bonus') ? ' ' + C('bonus') + '.' : ''; return [
-  { k: 'indeed', title: 'Indeed / ZipRecruiter / LinkedIn job post', where: 'Full description. Title: School Bus Driver, Toms River NJ, Training Available', text:
+  { k: 'indeed', title: 'Indeed / ZipRecruiter / LinkedIn job post', where: 'Full description. Title: School Bus Driver, Toms River NJ, Free Training Available', text:
 `WAY TO GO NJ LLC is hiring experienced and dependable CDL School Bus Drivers in Toms River, NJ. We are a growing school transportation company serving Lakewood and its surrounding towns, and we need reliable people now.
 
 PAY: ${C('pay')}
@@ -325,7 +325,7 @@ LICENSE: ${C('cdl')}
 What you get:
 • Steady routes close to home (Toms River, Lakewood, Jackson, Howell, Brick)
 • Minimum hours guaranteed
-• Training available, and help with your CDL and endorsements
+• Free training, and help with your CDL and endorsements
 • Mornings and afternoons, so the middle of your day is yours
 • Extra hours on field trips and activity runs
 • A dispatch team that picks up the phone
@@ -416,11 +416,11 @@ $('launch').addEventListener('click', (e) => { const k = e.target.dataset.copy; 
 
 /* ---------- setup steps ---------- */
 const STEPS = [
-  { k: 'details', t: 'Fill in Company details on the Posts tab and save', cost: 'free', p: 'Pay, hours and the license line drive every post. "Training available" is the strongest line you have.' },
+  { k: 'details', t: 'Fill in Company details on the Posts tab and save', cost: 'free', p: 'Pay, hours and the license line drive every post. "Free training available" is the strongest line you have.' },
   { k: 'site', t: 'Make sure the website form and this hub are switched on', cost: 'free', p: 'Follow SETUP.md in the GitHub repository once. After that, every website application and service inquiry shows in the Leads tab on its own.', links: [['Open SETUP.md', 'https://github.com/193JayFischer/WayToGo/blob/main/SETUP.md']] },
   { k: 'wa', t: 'Install WhatsApp Business on the company phone', cost: 'free', p: 'Use the hiring number. Set the business name to Way To Go NJ, add the address, hours, and a greeting message. Save the 4 quick replies from the Posts tab (/pay, /hours, /cdl, /apply). Create a label "Interested driver" and a broadcast list with the same name. Then add the number on the Posts tab so the WhatsApp link and QR appear.', links: [['WhatsApp Business (Android)', 'https://play.google.com/store/apps/details?id=com.whatsapp.w4b'], ['WhatsApp Business (iPhone)', 'https://apps.apple.com/app/whatsapp-business/id1386412985']] },
   { k: 'home', t: 'Add this hub to the phone home screen', cost: 'free', p: 'Open waytogonj.com/admin.html in Chrome or Safari on the phone, then Share, then Add to Home Screen. Every lead goes in here the moment you talk to them.' },
-  { k: 'indeed', t: 'Post the Indeed job', cost: 'free', p: 'Employer dashboard, Post a job. Paste the Indeed template. Title: "School Bus Driver, Toms River NJ, Training Available". Turn on "Apply with Indeed" and text/phone contact. Skip sponsoring for the first week. Set applicant alerts to go to the hiring email.', links: [['Indeed employer dashboard', 'https://employers.indeed.com/']] },
+  { k: 'indeed', t: 'Post the Indeed job', cost: 'free', p: 'Employer dashboard, Post a job. Paste the Indeed template. Title: "School Bus Driver, Toms River NJ, Free Training Available". Turn on "Apply with Indeed" and text/phone contact. Skip sponsoring for the first week. Set applicant alerts to go to the hiring email.', links: [['Indeed employer dashboard', 'https://employers.indeed.com/']] },
   { k: 'fbpage', t: 'Create or claim the Way To Go NJ Facebook Page and connect Instagram', cost: 'free', p: 'One Page, one Instagram business account, both managed from Meta Business Suite. Business Suite posts to Facebook and Instagram at once and lets you schedule a week of posts in one sitting. Profile photo: the bus with the logo. Bio: the pay line and the apply link.', links: [['Meta Business Suite', 'https://business.facebook.com/'], ['Create a Page', 'https://www.facebook.com/pages/create']] },
   { k: 'groups', t: 'Join 10 local Facebook groups from the company account', cost: 'free', p: 'Search Facebook for: Toms River jobs, Toms River community, Lakewood NJ jobs, Jackson NJ, Howell NJ, Brick NJ, Ocean County jobs, Manchester NJ, Berkeley NJ, CDL drivers New Jersey. Read each group\'s rules. Most allow one job post a week. Post the short group template, not the long one.', links: [['Search groups', 'https://www.facebook.com/groups/search/groups/?q=toms%20river%20nj%20jobs']] },
   { k: 'zip', t: 'Start the ZipRecruiter free trial', cost: 'trial', p: 'Post the same job. ZipRecruiter pushes it to 100+ partner boards, which is the part worth testing. Put a reminder in the phone calendar for the day before the trial ends and decide from the Leads tab whether it earned its fee.', links: [['ZipRecruiter employers', 'https://www.ziprecruiter.com/employer']] },
