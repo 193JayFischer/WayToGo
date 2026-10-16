@@ -13,15 +13,15 @@
     html, body { height: 100%; }
     body {
       background:
-        radial-gradient(900px 520px at 8% 0%, rgba(28, 155, 232, .18) 0%, transparent 60%),
-        radial-gradient(800px 560px at 100% 100%, rgba(255, 213, 0, .35) 0%, transparent 55%),
-        #ffffff;
+        radial-gradient(900px 520px at 8% 0%, rgba(28, 155, 232, .28) 0%, transparent 60%),
+        radial-gradient(800px 560px at 100% 100%, rgba(255, 213, 0, .45) 0%, transparent 55%),
+        linear-gradient(180deg, #eef3f8 0%, #e8edf3 100%);
       color: var(--ink); overflow-x: hidden;
     }
     .sky { position: fixed; inset: 0; pointer-events: none; overflow: hidden; }
     .sky i { position: absolute; border-radius: 50%; filter: blur(70px); animation: drift 14s ease-in-out infinite alternate; }
-    .sky i:nth-child(1) { width: 560px; height: 560px; background: #ffd500; opacity: .35; left: -200px; bottom: -220px; }
-    .sky i:nth-child(2) { width: 460px; height: 460px; background: #1c9be8; opacity: .18; right: -140px; top: -160px; animation-delay: -7s; }
+    .sky i:nth-child(1) { width: 560px; height: 560px; background: #ffd500; opacity: .45; left: -200px; bottom: -220px; }
+    .sky i:nth-child(2) { width: 460px; height: 460px; background: #1c9be8; opacity: .26; right: -140px; top: -160px; animation-delay: -7s; }
     @keyframes drift { from { transform: translate(0,0) scale(1); } to { transform: translate(40px,-30px) scale(1.08); } }
     .road { position: fixed; left: 0; right: 0; bottom: 0; height: 26px; background: #111; pointer-events: none; z-index: 0; }
     .road::after { content: ""; position: absolute; left: 0; right: 0; top: 11px; height: 4px; background: repeating-linear-gradient(90deg, var(--yellow) 0 60px, transparent 60px 120px); animation: lane 1.6s linear infinite; }
