@@ -6,7 +6,7 @@ window.WTG_CONFIG = {
   // Social pages. Paste the full address of each page you have. Leave the
   // rest empty and that icon stays hidden.
   social: {
-    facebook: "",
+    facebook: "https://www.facebook.com/Way2GoNJ",
     instagram: "https://www.instagram.com/waytogonj",
     tiktok: "",
     linkedin: "https://www.linkedin.com/company/waytogonj",
