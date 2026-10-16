@@ -150,7 +150,7 @@ footer .social { margin-top: 6px; }
 .social a[data-social="whatsapp"] { background: #25d366; }
 .social a[data-social="indeed"] { background: #2557a7; }
 .social a[data-social="x"] { background: #000; }
-.social a:hover { filter: brightness(1.08); transform: translateY(-2px); color: #fff; background-color: inherit; }
+.social a:hover { filter: brightness(1.08); transform: translateY(-2px); color: #fff; }
 .social a[data-social="nextdoor"]:hover { color: #0f2c0f; }
 .social.buttons { gap: 12px; }
 .social.buttons .lbl { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
