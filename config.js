@@ -20,11 +20,11 @@ window.WTG_CONFIG = {
   // Until apiKey and projectId are filled in, the forms and the admin hub show a
   // "not switched on yet" message instead of sending anything.
   firebase: {
-    apiKey: "",
-    authDomain: "",
-    projectId: "",
-    storageBucket: "",
-    messagingSenderId: "",
-    appId: ""
+    apiKey: "AIzaSyDSUkn0pYMSFnwtKZVjXJm-B2x3-Ko4ADg",
+    authDomain: "way-to-go-nj.firebaseapp.com",
+    projectId: "way-to-go-nj",
+    storageBucket: "way-to-go-nj.firebasestorage.app",
+    messagingSenderId: "918016064462",
+    appId: "1:918016064462:web:ad2ad5f9649412e802c99f"
   }
 };
