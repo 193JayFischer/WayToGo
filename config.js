@@ -7,7 +7,7 @@ window.WTG_CONFIG = {
   // rest empty and that icon stays hidden.
   social: {
     facebook: "https://www.facebook.com/share/1C38nJPyfz/",
-    instagram: "https://www.instagram.com/waytogonj",
+    instagram: "https://www.instagram.com/waytogonj400",
     tiktok: "",
     linkedin: "https://www.linkedin.com/company/143999811",
     youtube: "",
