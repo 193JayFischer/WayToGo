@@ -22,7 +22,7 @@
     .sky i:nth-child(1) { width: 520px; height: 520px; background: #ffd500; left: -160px; bottom: -200px; opacity: .35; }
     .sky i:nth-child(2) { width: 420px; height: 420px; background: #1c9be8; right: -120px; top: -140px; animation-delay: -7s; opacity: .4; }
     @keyframes drift { from { transform: translate(0,0) scale(1); } to { transform: translate(40px,-30px) scale(1.08); } }
-    .road { position: fixed; left: 0; right: 0; bottom: 0; height: 90px; pointer-events: none; background: linear-gradient(180deg, transparent, rgba(0,0,0,.35)); }
+    .road { position: fixed; left: 0; right: 0; bottom: 0; height: 90px; z-index: 0; pointer-events: none; background: linear-gradient(180deg, transparent, rgba(0,0,0,.35)); }
     .road::after { content: ""; position: absolute; left: 0; right: 0; bottom: 36px; height: 4px; background: repeating-linear-gradient(90deg, var(--yellow) 0 60px, transparent 60px 120px); opacity: .6; animation: lane 1.6s linear infinite; }
     @keyframes lane { from { background-position: 0 0; } to { background-position: 120px 0; } }
 
@@ -54,7 +54,7 @@
     .listing li::before { content: "•"; color: var(--yellow); margin-right: 10px; }
 
     .listing .social a { text-decoration: none; }
-    .admin { position: fixed; right: 14px; bottom: 10px; z-index: 2; font-size: .75rem; color: rgba(255,255,255,.4); padding: 6px 10px; border-radius: 6px; }
+    .admin { position: fixed; left: 14px; bottom: 10px; z-index: 2; font-size: .75rem; color: rgba(255,255,255,.4); padding: 6px 10px; border-radius: 6px; }
     .admin:hover { color: #fff; background: rgba(255,255,255,.1); }
 
     /* Contact modal */
@@ -98,6 +98,7 @@
         <dl>
           <dt>Operator</dt><dd>Jay Fischer</dd>
           <dt>Phone</dt><dd><a href="tel:+17326081939">732-608-1939</a></dd>
+          <dt>WhatsApp</dt><dd><a href="https://wa.me/17326081939" target="_blank" rel="noopener">Chat with us</a></dd>
           <dt>Email</dt><dd><a href="mailto:info@waytogonj.com">info@waytogonj.com</a></dd>
           <dt>Mail</dt><dd>P.O.B. 903, Lakewood, NJ 08701</dd>
           <dt>Operations</dt><dd>Toms River, New Jersey</dd>
@@ -115,12 +116,13 @@
   </main>
 
   <a class="admin" href="admin.html">Admin</a>
+  <a class="wa-fab" href="https://wa.me/17326081939?text=Hi%2C%20I%27d%20like%20to%20ask%20about%20Way%20To%20Go%20NJ." target="_blank" rel="noopener" aria-label="Chat with us on WhatsApp"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.8-1.4.1-.2 0-.3 0-.5l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.8 11.9 11.9 0 0 0 4.5 4c1.7.7 2.3.8 3.1.6a2.7 2.7 0 0 0 1.8-1.2 2.2 2.2 0 0 0 .2-1.2l-.1-.2z"/></svg><span>Chat on WhatsApp</span></a>
 
   <div class="modal" id="contact-modal" role="dialog" aria-modal="true" aria-labelledby="contact-title">
     <div class="box">
       <button class="close" id="close-contact" type="button" aria-label="Close">&times;</button>
       <h2 id="contact-title">Contact us for service</h2>
-      <p>Tell us a little about what you need and we will get back to you. Prefer to talk? Call <a href="tel:+17326081939">732-608-1939</a> or email <a href="mailto:info@waytogonj.com">info@waytogonj.com</a>.</p>
+      <p>Tell us a little about what you need and we will get back to you. Prefer to talk? Call or text <a href="tel:+17326081939">732-608-1939</a>, <a href="https://wa.me/17326081939?text=Hi%2C%20I%27d%20like%20to%20ask%20about%20school%20transportation%20service." target="_blank" rel="noopener">message us on WhatsApp</a>, or email <a href="mailto:info@waytogonj.com">info@waytogonj.com</a>.</p>
       <div id="contact-off" class="notice err" style="display:none">Inquiries are not switched on yet. Please check back shortly.</div>
       <form id="contact-form" novalidate>
         <div class="hp" aria-hidden="true"><label>Leave this empty <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
