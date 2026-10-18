@@ -111,7 +111,10 @@
             <label><input type="radio" name="cleanRecord" value="Yes" required> Yes</label>
             <label><input type="radio" name="cleanRecord" value="No"> No</label>
           </div>
-          <span class="hint">If no, you can explain in the notes at the end.</span>
+          <div id="record-explain" class="field" style="display:none;margin:10px 0 0">
+            <label for="recordExplain">If no, please explain *</label>
+            <textarea id="recordExplain" name="recordExplain" rows="3"></textarea>
+          </div>
         </div>
       </fieldset>
 
@@ -179,10 +182,6 @@
             </select>
           </div>
           <div class="field"><label for="referral">Referred by (name)</label><input id="referral" name="referral" type="text"></div>
-        </div>
-        <div class="field">
-          <label for="notes">Notes</label>
-          <textarea id="notes" name="notes" placeholder="Anything you want us to know"></textarea>
         </div>
         <div class="field">
           <div class="choices">
@@ -272,6 +271,15 @@ import { isConfigured, submitLead, friendlyError } from './site.js';
       } catch (e) {}
     }, 300);
   }
+  var explainBox = document.getElementById('record-explain');
+  var explainField = document.getElementById('recordExplain');
+  function syncExplain() {
+    var no = form.querySelector('input[name=cleanRecord][value=No]');
+    var show = !!(no && no.checked);
+    explainBox.style.display = show ? 'block' : 'none';
+    explainField.required = show;
+  }
+  form.addEventListener('change', syncExplain);
   form.addEventListener('input', save);
   form.addEventListener('change', save);
 
@@ -279,6 +287,7 @@ import { isConfigured, submitLead, friendlyError } from './site.js';
     var draft = JSON.parse(localStorage.getItem(KEY) || 'null');
     if (draft && draft.data) {
       fill(draft.data);
+      syncExplain();
       document.getElementById('resume-when').textContent = new Date(draft.savedAt).toLocaleString();
       document.getElementById('resume').style.display = 'block';
     }
@@ -288,6 +297,7 @@ import { isConfigured, submitLead, friendlyError } from './site.js';
     ev.preventDefault();
     try { localStorage.removeItem(KEY); } catch (e) {}
     form.reset();
+    syncExplain();
     document.getElementById('resume').style.display = 'none';
     savedEl.textContent = '';
   });
