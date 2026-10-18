@@ -320,7 +320,7 @@ $('l_next').value = addDays(2);
 
 /* ---------- company details ---------- */
 const CFIELDS = ['phone', 'wa', 'email', 'contact', 'pay', 'bonus', 'cdl', 'hours'];
-const DEFAULTS = { phone: '732-608-1939', wa: '17326081939', email: 'info@waytogonj.com', contact: 'Ask for Jay', pay: '$22 to $25 per hour, based on experience and endorsements', bonus: '', cdl: 'CDL with P and S endorsements preferred, not required. No CDL? Free training provided.', hours: 'Full-time, part-time, and on-call positions. Minimum hours guaranteed.' };
+const DEFAULTS = { phone: '732-608-1939', wa: '17326081939', email: 'info@waytogonj.com', contact: 'Ask for Jay', pay: '$25 to $28 per hour, based on experience and endorsements', bonus: '', cdl: 'CDL with P and S endorsements preferred, not required. No CDL? Free training provided.', hours: 'Full-time, part-time, and on-call positions. Minimum hours guaranteed.' };
 let company = { ...DEFAULTS };
 const C = (k) => company[k] || '';
 function fillCompanyForm() { CFIELDS.forEach((k) => { $('c_' + k).value = company[k] || ''; }); }
