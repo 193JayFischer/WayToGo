@@ -345,9 +345,9 @@ function waLink() { const n = (C('wa') || '').replace(/\D/g, ''); return n ? 'ht
 function contactLine() { const p = []; if (C('phone')) p.push('Call or text ' + C('phone') + (C('contact') ? ' (' + C('contact') + ')' : '')); p.push('Apply online: ' + APPLY_URL); if (waLink()) p.push('WhatsApp: ' + waLink()); if (C('email')) p.push('Email: ' + C('email')); return p.join('\n'); }
 const HOOKS = [
   { fb: "🚌 We're hiring CDL School Bus Drivers in Toms River and Lakewood, NJ!", ig: "🚌 Now hiring CDL School Bus Drivers in Toms River and Lakewood, NJ!", li: "Way To Go NJ LLC is hiring CDL School Bus Drivers in Toms River and Lakewood, NJ.", line: "Steady work close to home. Perfect for retirees, parents, and anyone who wants a reliable job in the area." },
+  { fb: "💰 $25 to $28 per hour, minimum hours guaranteed. Way To Go NJ is hiring school bus drivers in Toms River and Lakewood, NJ.", ig: "💰 $25 to $28 per hour. Minimum hours guaranteed. Now hiring in Toms River and Lakewood, NJ.", li: "$25 to $28 per hour with minimum hours guaranteed. Way To Go NJ LLC is hiring CDL School Bus Drivers in Toms River and Lakewood, NJ.", line: "Real pay, real hours. A growing local company building its team from the ground up." },
   { fb: "🎓 No CDL? No problem. We train you for free.", ig: "🎓 No CDL? No problem. Free training provided.", li: "No CDL yet? Way To Go NJ LLC provides free training for new school bus drivers in Toms River and Lakewood, NJ.", line: "We walk you through the whole process, from permit to endorsements. Most of our best drivers started with no CDL at all." },
-  { fb: "🏠 Home every night. Drive a school bus close to home in Toms River and Lakewood, NJ.", ig: "🏠 Home every night. School bus drivers wanted in Toms River and Lakewood, NJ.", li: "Home every night. Way To Go NJ LLC is hiring CDL School Bus Drivers for local routes in Toms River and Lakewood, NJ.", line: "No overnights, no long hauls. Local routes, steady hours, and a dispatch team that picks up the phone." },
-  { fb: "✅ Steady local work with minimum hours guaranteed. Way To Go NJ is hiring school bus drivers.", ig: "✅ Steady local work. Minimum hours guaranteed. Now hiring in Toms River and Lakewood, NJ.", li: "Looking for steady local work? Way To Go NJ LLC guarantees minimum hours for CDL School Bus Drivers in Toms River and Lakewood, NJ.", line: "A growing local company building its team from the ground up. Your contributions matter here." },
+  { fb: "🛣️ Your route starts here. Way To Go NJ is hiring school bus drivers for local routes in Toms River and Lakewood, NJ.", ig: "🛣️ Your route starts here. School bus drivers wanted in Toms River and Lakewood, NJ.", li: "Your route starts here. Way To Go NJ LLC is hiring CDL School Bus Drivers for local routes in Toms River and Lakewood, NJ.", line: "No overnights, no long hauls. Local routes, steady hours, home every night." },
 ];
 function TPLS(offset) { const H = HOOKS[weekIndex(offset || 0)]; const bonus = C('bonus') ? C('bonus') + '\n' : ''; const b1 = C('bonus') ? ' ' + C('bonus') + '.' : ''; return [
   { k: 'indeed', title: 'Indeed / ZipRecruiter / LinkedIn job post', where: 'Full description. Title: School Bus Driver, Toms River NJ, Free Training Available', text:
@@ -537,9 +537,9 @@ const NOT_NOW = [
 /* Four weekly ad designs. The planner rotates through them, one per week. */
 const ADS = [
   { n: 1, name: 'Drive with us', color: 'Yellow' },
-  { n: 2, name: 'No CDL? No problem.', color: 'Blue' },
-  { n: 3, name: 'Home every night', color: 'Black' },
-  { n: 4, name: 'Steady work. Local.', color: 'White' },
+  { n: 2, name: '$25 to $28 big number', color: 'White card' },
+  { n: 3, name: 'No CDL? No problem.', color: 'Blue' },
+  { n: 4, name: 'Your route starts here', color: 'Road sign' },
 ];
 function weekIndex(offset) { const d = new Date(weekKey() + 'T00:00:00'); d.setDate(d.getDate() + (offset || 0) * 7); const epoch = new Date('2026-10-19T00:00:00'); return ((Math.round((d - epoch) / 604800000) % 4) + 4) % 4; }
 function adFor(offset) { return ADS[weekIndex(offset)]; }
