@@ -114,10 +114,15 @@
     .task input { width: 20px; height: 20px; margin: 2px 0 0; }
     .task.done label { text-decoration: line-through; color: var(--muted); }
     .task label { font-size: .95rem; cursor: pointer; }
-    .task .act { display: flex; gap: 6px; grid-column: 2; }
+    .task .act { display: flex; gap: 6px; grid-column: 2; flex-wrap: wrap; }
     .task .act button, .task .act a { font: 600 .75rem var(--font); padding: 5px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--bg-alt); color: var(--ink); cursor: pointer; white-space: nowrap; }
     .task .act button:hover, .task .act a:hover { background: var(--yellow); }
     .day.off { background: var(--bg-alt); }
+    .adcard { flex-direction: row; gap: 20px; align-items: flex-start; }
+    .adcard img { width: 180px; border-radius: 10px; border: 1px solid var(--line); flex: none; }
+    .adcard textarea { width: 100%; font-size: .9rem; margin: 8px 0; }
+    .task .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--line); margin: 7px 5px 0; }
+    @media (max-width: 560px) { .adcard { flex-direction: column; } .adcard img { width: 100%; } }
     /* routine (legacy table) */
     table { border-collapse: collapse; width: 100%; font-size: .92rem; }
     th, td { text-align: left; padding: 10px; border-top: 1px solid var(--line); vertical-align: top; }
@@ -270,7 +275,15 @@
       </div>
       <div class="progress"><div id="week-bar"></div></div>
     </div>
+    <div class="panel adcard" id="week-ad"></div>
     <div class="days" id="days"></div>
+    <div class="panel adcard" id="next-preview" style="display:none"></div>
+    <div class="panel">
+      <span class="eyebrow">Not in the routine right now</span>
+      <h3>Other places you can post</h3>
+      <p class="note">Set aside on purpose. Each one still has its text and link ready if you want to use it.</p>
+      <div id="notnow"></div>
+    </div>
     <div class="panel">
       <h3>Rules that keep the money low</h3>
       <ul class="checks" style="margin-top:8px">
@@ -330,7 +343,13 @@ fillCompanyForm();
 /* ---------- templates ---------- */
 function waLink() { const n = (C('wa') || '').replace(/\D/g, ''); return n ? 'https://wa.me/' + n + '?text=' + encodeURIComponent("Hi, I'm interested in driving for Way To Go NJ.") : ''; }
 function contactLine() { const p = []; if (C('phone')) p.push('Call or text ' + C('phone') + (C('contact') ? ' (' + C('contact') + ')' : '')); p.push('Apply online: ' + APPLY_URL); if (waLink()) p.push('WhatsApp: ' + waLink()); if (C('email')) p.push('Email: ' + C('email')); return p.join('\n'); }
-function TPLS() { const bonus = C('bonus') ? C('bonus') + '\n' : ''; const b1 = C('bonus') ? ' ' + C('bonus') + '.' : ''; return [
+const HOOKS = [
+  { fb: "🚌 We're hiring CDL School Bus Drivers in Toms River and Lakewood, NJ!", ig: "🚌 Now hiring CDL School Bus Drivers in Toms River and Lakewood, NJ!", li: "Way To Go NJ LLC is hiring CDL School Bus Drivers in Toms River and Lakewood, NJ.", line: "Steady work close to home. Perfect for retirees, parents, and anyone who wants a reliable job in the area." },
+  { fb: "🎓 No CDL? No problem. We train you for free.", ig: "🎓 No CDL? No problem. Free training provided.", li: "No CDL yet? Way To Go NJ LLC provides free training for new school bus drivers in Toms River and Lakewood, NJ.", line: "We walk you through the whole process, from permit to endorsements. Most of our best drivers started with no CDL at all." },
+  { fb: "🏠 Home every night. Drive a school bus close to home in Toms River and Lakewood, NJ.", ig: "🏠 Home every night. School bus drivers wanted in Toms River and Lakewood, NJ.", li: "Home every night. Way To Go NJ LLC is hiring CDL School Bus Drivers for local routes in Toms River and Lakewood, NJ.", line: "No overnights, no long hauls. Local routes, steady hours, and a dispatch team that picks up the phone." },
+  { fb: "✅ Steady local work with minimum hours guaranteed. Way To Go NJ is hiring school bus drivers.", ig: "✅ Steady local work. Minimum hours guaranteed. Now hiring in Toms River and Lakewood, NJ.", li: "Looking for steady local work? Way To Go NJ LLC guarantees minimum hours for CDL School Bus Drivers in Toms River and Lakewood, NJ.", line: "A growing local company building its team from the ground up. Your contributions matter here." },
+];
+function TPLS(offset) { const H = HOOKS[weekIndex(offset || 0)]; const bonus = C('bonus') ? C('bonus') + '\n' : ''; const b1 = C('bonus') ? ' ' + C('bonus') + '.' : ''; return [
   { k: 'indeed', title: 'Indeed / ZipRecruiter / LinkedIn job post', where: 'Full description. Title: School Bus Driver, Toms River NJ, Free Training Available', text:
 `WAY TO GO NJ LLC is hiring experienced and dependable CDL School Bus Drivers in Toms River, NJ. We are a growing school transportation company serving Lakewood and its surrounding towns, and we need reliable people now.
 
@@ -351,27 +370,53 @@ Requirements: 21+, clean driving record, able to pass a DOT physical, drug scree
 
 Apply here or reach us directly:
 ${contactLine()}` },
-  { k: 'fb', title: 'Facebook Page + Instagram post', where: 'Post from Meta Business Suite to both at once. Add a bus photo.', text:
-`🚌 NOW HIRING: CDL School Bus Drivers in Toms River, NJ
+  { k: 'fb', title: 'Facebook Page post', where: 'Monday. Add this week\'s square ad.', text:
+`${H.fb}
 
-${C('pay')}${b1}
-${C('hours')}
-${C('cdl')}
+💰 ${C('pay')}
+🎓 No CDL? Free training provided
+✅ Minimum hours guaranteed
+✅ Full-time, part-time, and on-call
 
-Steady work close to home. Retirees, parents, and CDL holders who want to be home every night: this is the job you have been looking for.
+${H.line}
 
-📲 ${C('phone') ? 'Call or text ' + C('phone') : ''}
 📝 Apply in 5 minutes: ${APPLY_URL}
-${waLink() ? '💬 WhatsApp: ' + waLink() : ''}
+💬 WhatsApp us: https://wa.me/17326081939
+📲 Call or text ${C('phone')}
 
-Share this with someone who would be a great driver. 🙏
-#LakewoodNJ #TomsRiver #OceanCountyJobs #BusDriver #CDLJobs #NowHiring #JacksonNJ #HowellNJ #WayToGoNJ` },
+Tag someone who would be a great driver! 🙏
+#NowHiring #SchoolBusDriver #CDLJobs #TomsRiver #LakewoodNJ #OceanCountyJobs #JacksonNJ #HowellNJ #BrickNJ #WayToGoNJ` },
+  { k: 'ig', title: 'Instagram post', where: 'Monday. Same square ad. Links are not tappable on Instagram, so this says "link in bio".', text:
+`${H.ig}
+
+💰 ${C('pay')}
+🎓 No CDL? Free training provided
+✅ Minimum hours guaranteed
+✅ Full-time, part-time, and on-call
+
+${H.line}
+
+📝 Apply in 5 minutes, link in bio
+📲 Call, text, or WhatsApp ${C('phone')}
+
+Tag someone who would be a great driver 🙏
+.
+.
+.
+#NowHiring #SchoolBusDriver #CDLJobs #CDLDriver #BusDriverJobs #TomsRiver #LakewoodNJ #OceanCountyNJ #JacksonNJ #HowellNJ #BrickNJ #NJJobs #JerseyShoreJobs #WayToGoNJ` },
+  { k: 'li', title: 'LinkedIn company page post', where: 'Thursday. Add this week\'s wide ad.', text:
+`${H.li}
+
+${C('pay')}. Minimum hours guaranteed. Full-time, part-time, and on-call positions. No CDL yet? Free training provided.
+
+${H.line}
+
+Apply in five minutes: ${APPLY_URL}
+Questions? Call or text ${C('phone')}.
+
+#NowHiring #SchoolBusDriver #CDLJobs #TomsRiver #LakewoodNJ #NJJobs` },
   { k: 'group', title: 'Facebook group post (short, community tone)', where: 'Local jobs and community groups. One group post a week each.', text:
 `Hi neighbors. Way To Go NJ (local school bus company, Toms River) is hiring CDL school bus drivers. ${C('pay')}. ${C('cdl')} Great for retirees and parents. ${C('phone') ? 'Text ' + C('phone') : ''} or apply at ${APPLY_URL} and we will call you back the same day. Thanks for sharing!` },
-  { k: 'ig', title: 'Instagram Reel / Story caption', where: 'Short clip of the bus or yard. Put the apply link in the bio.', text:
-`We need drivers. Lakewood, Toms River and the surrounding towns. ${C('pay')}. Minimum hours guaranteed. ${C('cdl')}
-Tap the link in bio or DM us "DRIVER" and we will text you today. 🚌
-#NowHiring #TomsRiver #BusDriver #CDL #LakewoodNJ` },
   { k: 'wa', title: 'WhatsApp status + broadcast message', where: 'Post as status every Tuesday. Send to the "Interested drivers" broadcast list.', text:
 `Way To Go NJ is hiring CDL school bus drivers in Toms River. ${C('pay')}. Minimum hours guaranteed. ${C('cdl')} Reply to this message or ${C('phone') ? 'call ' + C('phone') : 'call us'} and we will get you started this week. Please forward to anyone looking for steady work. 🚌` },
   { k: 'dm', title: 'Direct message to a prospect (cold)', where: 'Someone who commented, liked, or is in a drivers group.', text:
@@ -460,28 +505,49 @@ renderSteps();
 const PLAN = [
   { d: 'Monday', tasks: [
     { k: 'mon1', t: 'Refresh the Indeed post (edit the title or one line so it shows as updated).', open: 'https://employers.indeed.com/jobs' },
-    { k: 'mon2', t: 'Post to the Facebook Page and Instagram from Business Suite.', copy: 'fb', open: 'https://business.facebook.com/latest/home' },
-    { k: 'mon3', t: 'Post in 3 local Facebook groups (Lakewood, Toms River, Jackson).', copy: 'group', open: 'https://m.facebook.com/groups/' } ] },
+    { k: 'mon2', t: 'Post this week\'s ad to the Facebook Page.', copy: 'fb', img: 'square', open: 'https://www.facebook.com/' },
+    { k: 'mon3', t: 'Post this week\'s ad to Instagram.', copy: 'ig', img: 'square', open: 'https://www.instagram.com/' },
+    { k: 'mon4', t: 'Post in 3 local Facebook groups (Lakewood, Toms River, Jackson).', copy: 'group', img: 'square', open: 'https://m.facebook.com/groups/' } ] },
   { d: 'Tuesday', tasks: [
-    { k: 'tue1', t: 'Post the WhatsApp status and send the broadcast to interested drivers.', copy: 'wa' },
+    { k: 'tue1', t: 'Post the WhatsApp status and send the broadcast to interested drivers.', copy: 'wa', img: 'story' },
     { k: 'tue2', t: 'Check Indeed and ZipRecruiter candidates. Text every new one.', open: 'https://employers.indeed.com/candidates' },
     { k: 'tue3', t: 'Leads tab: call everyone due today.', tab: 'leads' } ] },
   { d: 'Wednesday', tasks: [
-    { k: 'wed1', t: 'Instagram Reel or photo (a bus, a driver, the yard). Same clip to Facebook.', copy: 'ig', open: 'https://www.instagram.com/' },
-    { k: 'wed2', t: 'Post in 3 different groups (Howell, Brick, Manchester).', copy: 'group', open: 'https://m.facebook.com/groups/' } ] },
+    { k: 'wed1', t: 'Instagram or Facebook story with this week\'s tall ad.', copy: 'ig', img: 'story', open: 'https://www.instagram.com/' },
+    { k: 'wed2', t: 'Post in 3 different groups (Howell, Brick, Manchester).', copy: 'group', img: 'square', open: 'https://m.facebook.com/groups/' } ] },
   { d: 'Thursday', tasks: [
-    { k: 'thu1', t: 'Referral text to current drivers.', copy: 'ref' },
-    { k: 'thu2', t: 'Nextdoor and Google Business post.', copy: 'group', open: 'https://business.google.com/' },
+    { k: 'thu1', t: 'Referral text to current drivers.', copy: 'ref', img: 'square' },
+    { k: 'thu2', t: 'LinkedIn company page post.', copy: 'li', img: 'wide', open: 'https://www.linkedin.com/company/143999811/admin/' },
     { k: 'thu3', t: 'Reply to every DM and comment. Update lead stages.', tab: 'leads' } ] },
   { d: 'Friday', tasks: [
-    { k: 'fri1', t: 'Craigslist and LinkedIn repost.', copy: 'cl', open: 'https://post.craigslist.org/c/jys' },
+    { k: 'fri1', t: 'Refresh the LinkedIn job listing so it shows as updated.', open: 'https://www.linkedin.com/company/143999811/admin/' },
     { k: 'fri2', t: 'Call leads from this week who went quiet. Set next week\'s follow-up dates.', tab: 'leads' } ] },
   { d: 'Saturday', off: true, tasks: [
     { k: 'sat1', t: 'Day off. Reply to messages only.' } ] },
   { d: 'Sunday', tasks: [
-    { k: 'sun1', t: 'Schedule next week\'s Facebook and Instagram posts in Business Suite (10 minutes).', copy: 'fb', open: 'https://business.facebook.com/latest/home' },
+    { k: 'sun1', t: 'Preview next week\'s ad and posts below. Save the images to your phone.', preview: true },
     { k: 'sun2', t: 'Check the "New this week" number in the Leads tab. Under 5? Boost one Facebook post.', tab: 'leads' } ] },
 ];
+const NOT_NOW = [
+  { t: 'Craigslist Jersey Shore', why: '$25 per post. Try after two weeks if free posting brings fewer than 5 leads.', copy: 'cl', open: 'https://post.craigslist.org/c/jys' },
+  { t: 'Nextdoor', why: 'Address verification pending. Post here once the Lakewood or Toms River address is confirmed.', copy: 'group', open: 'https://nextdoor.com/' },
+  { t: 'Google Business Profile', why: 'Set up the profile first at business.google.com, then post the short text weekly.', copy: 'group', open: 'https://business.google.com/' },
+  { t: 'ZipRecruiter', why: 'Start the free trial when you have 10 minutes on the laptop. Same description as Indeed.', copy: 'indeed', open: 'https://www.ziprecruiter.com/employer' },
+];
+/* Four weekly ad designs. The planner rotates through them, one per week. */
+const ADS = [
+  { n: 1, name: 'Drive with us', color: 'Yellow' },
+  { n: 2, name: 'No CDL? No problem.', color: 'Blue' },
+  { n: 3, name: 'Home every night', color: 'Black' },
+  { n: 4, name: 'Steady work. Local.', color: 'White' },
+];
+function weekIndex(offset) { const d = new Date(weekKey() + 'T00:00:00'); d.setDate(d.getDate() + (offset || 0) * 7); const epoch = new Date('2026-10-19T00:00:00'); return ((Math.round((d - epoch) / 604800000) % 4) + 4) % 4; }
+function adFor(offset) { return ADS[weekIndex(offset)]; }
+function adUrl(ad, size) { return SITE + 'ads/week' + ad.n + '-' + size + '.png'; }
+async function copyImage(url) {
+  try { const r = await fetch(url); const blob = await r.blob(); await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]); toast('Image copied'); }
+  catch (e) { window.open(url, '_blank'); toast('Opened the image. Press and hold to save it.'); }
+}
 let routine = { week: '', done: {} };
 function weekKey() { const d = new Date(); const day = (d.getDay() + 6) % 7; const mon = new Date(d); mon.setDate(d.getDate() - day); mon.setHours(0,0,0,0); return mon.toISOString().slice(0, 10); }
 function weekDates() { const mon = new Date(weekKey() + 'T00:00:00'); return Array.from({ length: 7 }, (_, i) => { const x = new Date(mon); x.setDate(mon.getDate() + i); return x; }); }
@@ -494,18 +560,23 @@ function renderRoutine() {
   $('days').innerHTML = PLAN.map((day, i) => {
     const cls = (i === todayIdx ? 'today' : i < todayIdx ? 'past' : '') + (day.off ? ' off' : '');
     const tasks = day.tasks.map((t) => { if (!day.off) total++; const ok = !!routine.done[t.k]; if (ok && !day.off) done++;
-      const acts = [t.copy ? `<button type="button" data-rcopy="${t.copy}">Copy post</button>` : '', t.open ? `<a href="${t.open}" target="_blank" rel="noopener">Open</a>` : '', t.tab ? `<button type="button" data-rtab="${t.tab}">Go</button>` : ''].join('');
+      const acts = [t.copy ? `<button type="button" data-rcopy="${t.copy}">Copy post</button>` : '', t.img ? `<button type="button" data-rimg="${t.img}">Copy image</button><a href="${adUrl(adFor(0), t.img)}" download target="_blank" rel="noopener">Save image</a>` : '', t.open ? `<a href="${t.open}" target="_blank" rel="noopener">Open</a>` : '', t.tab ? `<button type="button" data-rtab="${t.tab}">Go</button>` : '', t.preview ? `<button type="button" data-rpreview="1">Show next week</button>` : ''].join('');
       return `<div class="task ${ok ? 'done' : ''}"><input type="checkbox" id="r_${t.k}" data-rk="${t.k}" ${ok ? 'checked' : ''}><label for="r_${t.k}">${esc(t.t)}</label><div class="act">${acts}</div></div>`; }).join('');
     return `<div class="day ${cls}"><div class="dh"><b>${day.d}</b><span class="${i === todayIdx ? 'tdy' : ''}">${i === todayIdx ? 'Today · ' : ''}${fmtD(dates[i])}</span></div>${tasks}</div>`;
   }).join('');
   $('week-done').textContent = done + '/' + total;
   $('week-bar').style.width = (total ? Math.round(done / total * 100) : 0) + '%';
+  const ad = adFor(0), next = adFor(1);
+  $('week-ad').innerHTML = `<img src="${adUrl(ad, 'square')}" alt=""><div><span class="eyebrow">This week's ad</span><h3>Week ${ad.n} of 4 · ${esc(ad.name)}</h3><p class="note">${esc(ad.color)} design. Every "Copy image" and "Save image" button on this page uses it. The text under "Copy post" also changes each week. Next week: ${esc(next.name)}.</p><div class="rowx"><a class="btn outline sm" href="${adUrl(ad, 'square')}" target="_blank" rel="noopener">Square</a><a class="btn outline sm" href="${adUrl(ad, 'wide')}" target="_blank" rel="noopener">Wide</a><a class="btn outline sm" href="${adUrl(ad, 'story')}" target="_blank" rel="noopener">Tall</a></div></div>`;
+  $('notnow').innerHTML = NOT_NOW.map((x) => `<div class="task"><span class="dot"></span><label><b>${esc(x.t)}</b><br><span class="note">${esc(x.why)}</span></label><div class="act"><button type="button" data-rcopy="${x.copy}">Copy post</button><a href="${x.open}" target="_blank" rel="noopener">Open</a></div></div>`).join('');
 }
 renderRoutine();
 $('days').addEventListener('click', (e) => {
   const b = e.target.closest('button'); if (!b) return;
   if (b.dataset.rcopy) { const el = $('tpl_' + b.dataset.rcopy); copyText(el ? el.value : (TPLS().find((t) => t.k === b.dataset.rcopy) || {}).text || ''); }
   if (b.dataset.rtab) showTab(b.dataset.rtab);
+  if (b.dataset.rimg) copyImage(adUrl(adFor(0), b.dataset.rimg));
+  if (b.dataset.rpreview) { const n = adFor(1); const box = $('next-preview'); box.style.display = box.style.display === 'none' ? 'block' : 'none'; box.innerHTML = `<img src="${adUrl(n, 'square')}" alt=""><div><span class="eyebrow">Next week's ad</span><h3>Week ${n.n} of 4 · ${esc(n.name)}</h3><p class="note">Facebook text for next week:</p><textarea readonly rows="8">${esc(TPLS(1).find((t) => t.k === 'fb').text)}</textarea><div class="rowx"><a class="btn outline sm" href="${adUrl(n, 'square')}" target="_blank" rel="noopener">Square</a><a class="btn outline sm" href="${adUrl(n, 'wide')}" target="_blank" rel="noopener">Wide</a><a class="btn outline sm" href="${adUrl(n, 'story')}" target="_blank" rel="noopener">Tall</a></div></div>`; }
 });
 
 /* ---------- database ---------- */
