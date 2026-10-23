@@ -307,6 +307,7 @@ import { isConfigured, connect, friendlyError } from './site.js';
 'use strict';
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const linkify = (s) => esc(s).replace(/https?:\/\/[^\s<]+/g, (u) => `<a href="${u}" target="_blank" rel="noopener">${u}</a>`);
 const toast = (m) => { const t = $('toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('on'), 1600); };
 const copyText = async (text) => { try { await navigator.clipboard.writeText(text); toast('Copied'); } catch (e) { const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); toast('Copied'); } catch (_) { toast('Select the text and copy it manually'); } ta.remove(); } };
 const today = () => new Date().toISOString().slice(0, 10);
@@ -655,8 +656,8 @@ function renderLeads() {
     return `<div class="ld ${stageClass(l)}" data-id="${l.id}">
       <div><div class="who">${esc(l.fullName || '(no name)')}${l.phone ? `<small><a href="tel:${esc(l.phone)}">${esc(l.phone)}</a></small>` : ''}</div>
       <div class="meta"><span class="chip type ${type === 'Service inquiry' ? 'inq' : type === 'Lead' ? 'lead' : ''}">${esc(type)}</span><span class="chip">${esc(l.source || 'Website')}</span>${isDup(l) ? '<span class="chip dup">Possible duplicate</span>' : ''}${lic ? `<span class="chip">${esc(lic)}</span>` : ''}${l.organization ? `<span>${esc(l.organization)}</span>` : ''}${l.city ? `<span>${esc(l.city)}</span>` : ''}<span>${fmt(l.createdAt)}</span>${l.next ? `<span>Follow up ${esc(l.next)}${l.next <= t && !closed ? ' (due)' : ''}</span>` : ''}</div></div>
-      <div class="ctl"><select data-stage="${l.id}">${opts(STAGES, l.status || 'New')}</select><button class="btn outline sm" data-open="${l.id}" type="button">Details</button></div>
-      ${l.notes ? `<div class="notes">${esc(l.notes)}</div>` : ''}
+      <div class="ctl"><select data-stage="${l.id}">${opts(STAGES, l.status || 'New')}</select><button class="btn outline sm" data-open="${l.id}" type="button">Details</button>${l.indeedId ? `<a class="btn sm" href="https://account.indeed.com/o/myaccess/switch/confirm?employerId=1fb47a09cf9a8c0a7b43cc05a95deb64&continue=https%3A%2F%2Femployers.indeed.com%2Fcandidates%2Fview%3Fid%3D${esc(l.indeedId)}" target="_blank" rel="noopener">Open in Indeed</a>` : ''}</div>
+      ${l.notes ? `<div class="notes">${linkify(l.notes)}</div>` : ''}
       <div class="more">
         ${extra ? `<div class="kv">${extra}</div>` : ''}
         <div class="grid2">
