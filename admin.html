@@ -541,7 +541,7 @@ const ADS = [
   { n: 3, name: 'No CDL? No problem.', color: 'Blue' },
   { n: 4, name: 'Your route starts here', color: 'Road sign' },
 ];
-function weekIndex(offset) { const d = new Date(weekKey() + 'T00:00:00'); d.setDate(d.getDate() + (offset || 0) * 7); const epoch = new Date('2026-10-19T00:00:00'); return ((Math.round((d - epoch) / 604800000) % 4) + 4) % 4; }
+function weekIndex(offset) { const d = new Date(weekKey() + 'T00:00:00'); d.setDate(d.getDate() + (offset || 0) * 7); const epoch = new Date('2026-10-12T00:00:00'); return ((Math.round((d - epoch) / 604800000) % 4) + 4) % 4; }
 function adFor(offset) { return ADS[weekIndex(offset)]; }
 function adUrl(ad, size) { return SITE + 'ads/week' + ad.n + '-' + size + '.png'; }
 async function copyImage(url) {
