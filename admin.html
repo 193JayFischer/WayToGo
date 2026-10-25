@@ -641,11 +641,12 @@ async function runGeoQueue() {
     catch (e) { out = { mi: null, min: null, src: 'none' }; }
     out.t = Date.now(); geoState.cache[k] = out;
     try { await fs.setDoc(fs.doc(db, 'settings', 'geo'), { towns2: { [k]: out } }, { merge: true }); } catch (e) { /* offline or not admin */ }
-    renderLeads();
+    updateLocLines();
     if (!TOWNS[k]) await new Promise((r) => setTimeout(r, 1100));
   }
   geoState.busy = false;
 }
+function updateLocLines() { document.querySelectorAll('#leadList .ld').forEach((card) => { const l = leads.find((x) => x.id === card.dataset.id); const el = card.querySelector('.loc'); if (l && el) { const tmp = document.createElement('div'); tmp.innerHTML = locLine(l); el.replaceWith(tmp.firstElementChild); } }); }
 function locLine(l) {
   const label = townLabel(l); if (!label) return `<div class="loc unknown">📍 Town not provided</div>`;
   const g = geoFor(l);
@@ -695,7 +696,7 @@ function startListening() {
   }));
   unsubs.push(fs.onSnapshot(fs.doc(db, 'settings', 'company'), (snap) => { if (snap.exists()) { company = { ...DEFAULTS, ...snap.data() }; fillCompanyForm(); renderTemplates(); $('companyStatus').textContent = 'Loaded from the shared database.'; } }, () => {}));
   unsubs.push(fs.onSnapshot(fs.doc(db, 'settings', 'checklist'), (snap) => { if (snap.exists()) { checklist = snap.data().done || {}; renderSteps(); } }, () => {}));
-  unsubs.push(fs.onSnapshot(fs.doc(db, 'settings', 'geo'), (snap) => { if (snap.exists()) { geoState.cache = { ...geoState.cache, ...(snap.data().towns2 || {}) }; renderLeads(); } }, () => {}));
+  unsubs.push(fs.onSnapshot(fs.doc(db, 'settings', 'geo'), (snap) => { if (snap.exists()) { geoState.cache = { ...geoState.cache, ...(snap.data().towns2 || {}) }; if ($('leadList').querySelector('.ld')) updateLocLines(); else renderLeads(); } }, () => {}));
   unsubs.push(fs.onSnapshot(fs.doc(db, 'settings', 'routine'), (snap) => { if (snap.exists()) { const r = snap.data(); routine = { week: r.week || '', done: r.done || {} }; } renderRoutine(); }, () => {}));
 }
 function stopListening() { unsubs.forEach((u) => { try { u(); } catch (e) {} }); unsubs = []; }
@@ -728,7 +729,18 @@ $('logout').addEventListener('click', () => authLib.signOut(auth));
 /* ---------- leads ---------- */
 function stageClass(l) { if (CLOSED.includes(l.status)) return 'cold'; if (l.next && l.next <= today()) return 'due'; if (['Interested', 'Interview set', 'Paperwork / training'].includes(l.status)) return 'hot'; if (l.status === 'New' || !l.status) return 'new'; return ''; }
 function licenseOf(l) { if (l.license) return l.license; if (l.hasCdl) { if (/^yes/i.test(l.hasCdl)) { const e = (l.endorsements || []).join(' '); return /P/.test(e) && /S/.test(e) ? 'Has CDL with P & S' : 'Has CDL, needs P/S'; } return 'No CDL, willing to train'; } return ''; }
+let renderPending = false;
 function renderLeads() {
+  const list = $('leadList'); const ae = document.activeElement;
+  if (ae && list.contains(ae) && /^(SELECT|INPUT|TEXTAREA)$/.test(ae.tagName)) { renderPending = true; return; }
+  renderPending = false;
+  const openIds = Array.from(list.querySelectorAll('.ld.open')).map((el) => el.dataset.id);
+  renderLeadsNow();
+  openIds.forEach((id) => { const el = list.querySelector(`.ld[data-id="${id}"]`); if (el) el.classList.add('open'); });
+}
+// When the user finishes with a dropdown or field, apply any render that was held back.
+document.addEventListener('focusout', (e) => { if (renderPending && $('leadList').contains(e.target)) setTimeout(() => { if (renderPending) renderLeads(); }, 150); });
+function renderLeadsNow() {
   const q = $('f_q').value.trim().toLowerCase(), ft = $('f_type').value, fs_ = $('f_stage').value, fsrc = $('f_source').value, sort = $('f_sort').value;
   const t = today(), wk = addDays(-7);
   const open = leads.filter((l) => !CLOSED.includes(l.status));
