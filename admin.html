@@ -611,7 +611,7 @@ function estimate(pt) { const straight = haversine([YARD.lat, YARD.lng], pt); co
 async function routeOsrm(pt) {
   const r = await fetch(`https://router.project-osrm.org/route/v1/driving/${YARD.lng},${YARD.lat};${pt[1]},${pt[0]}?overview=false`); if (!r.ok) throw new Error('osrm');
   const j = await r.json(); const rt = j.routes && j.routes[0]; if (!rt) throw new Error('noroute');
-  return { mi: Math.round(rt.distance / 1609.34 * 10) / 10, min: Math.round(rt.duration / 60 * 1.15), src: 'osrm' };
+  return { mi: Math.round(rt.distance / 1609.34 * 10) / 10, min: Math.round(rt.duration / 60), src: 'osrm' };
 }
 async function geocode(key) {
   if (TOWNS[key]) return TOWNS[key];
@@ -623,7 +623,7 @@ function geoFor(l) { const k = townKey(l); if (!k || k === 'yard') return null; 
 async function fixYard() {
   if (geoState.yardDone) return; geoState.yardDone = true;
   const y = geoState.cache.yard; if (y && y.lat) { YARD.lat = y.lat; YARD.lng = y.lng; return; }
-  try { const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(YARD.address)}`); const j = await r.json(); if (j[0]) { YARD.lat = parseFloat(j[0].lat); YARD.lng = parseFloat(j[0].lon); try { await fs.setDoc(fs.doc(db, 'settings', 'geo'), { towns: { yard: { lat: YARD.lat, lng: YARD.lng, t: Date.now() } } }, { merge: true }); } catch (e) {} } await new Promise((r) => setTimeout(r, 1100)); } catch (e) { geoState.yardDone = false; }
+  try { const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=us&q=${encodeURIComponent(YARD.address)}`); const j = await r.json(); if (j[0] && haversine([YARD.lat, YARD.lng], [parseFloat(j[0].lat), parseFloat(j[0].lon)]) < 5) { YARD.lat = parseFloat(j[0].lat); YARD.lng = parseFloat(j[0].lon); try { await fs.setDoc(fs.doc(db, 'settings', 'geo'), { towns2: { yard: { lat: YARD.lat, lng: YARD.lng, t: Date.now() } } }, { merge: true }); } catch (e) {} } await new Promise((r) => setTimeout(r, 1100)); } catch (e) { geoState.yardDone = false; }
 }
 async function runGeoQueue() {
   if (geoState.busy) return; geoState.busy = true;
@@ -633,7 +633,7 @@ async function runGeoQueue() {
     try { const pt = await geocode(k); try { out = await routeOsrm(pt); } catch (e) { out = estimate(pt); } out.lat = pt[0]; out.lng = pt[1]; }
     catch (e) { out = { mi: null, min: null, src: 'none' }; }
     out.t = Date.now(); geoState.cache[k] = out;
-    try { await fs.setDoc(fs.doc(db, 'settings', 'geo'), { towns: { [k]: out } }, { merge: true }); } catch (e) { /* offline or not admin */ }
+    try { await fs.setDoc(fs.doc(db, 'settings', 'geo'), { towns2: { [k]: out } }, { merge: true }); } catch (e) { /* offline or not admin */ }
     renderLeads();
     if (!TOWNS[k]) await new Promise((r) => setTimeout(r, 1100));
   }
@@ -679,7 +679,7 @@ function startListening() {
   }));
   unsubs.push(fs.onSnapshot(fs.doc(db, 'settings', 'company'), (snap) => { if (snap.exists()) { company = { ...DEFAULTS, ...snap.data() }; fillCompanyForm(); renderTemplates(); $('companyStatus').textContent = 'Loaded from the shared database.'; } }, () => {}));
   unsubs.push(fs.onSnapshot(fs.doc(db, 'settings', 'checklist'), (snap) => { if (snap.exists()) { checklist = snap.data().done || {}; renderSteps(); } }, () => {}));
-  unsubs.push(fs.onSnapshot(fs.doc(db, 'settings', 'geo'), (snap) => { if (snap.exists()) { geoState.cache = { ...geoState.cache, ...(snap.data().towns || {}) }; renderLeads(); } }, () => {}));
+  unsubs.push(fs.onSnapshot(fs.doc(db, 'settings', 'geo'), (snap) => { if (snap.exists()) { geoState.cache = { ...geoState.cache, ...(snap.data().towns2 || {}) }; renderLeads(); } }, () => {}));
   unsubs.push(fs.onSnapshot(fs.doc(db, 'settings', 'routine'), (snap) => { if (snap.exists()) { const r = snap.data(); routine = { week: r.week || '', done: r.done || {} }; } renderRoutine(); }, () => {}));
 }
 function stopListening() { unsubs.forEach((u) => { try { u(); } catch (e) {} }); unsubs = []; }
