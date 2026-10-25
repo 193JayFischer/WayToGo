@@ -649,7 +649,7 @@ function locLine(l) {
 }
 // Indeed candidate ids for leads that were added from screenshots before their emails were matched. Applied once by the hub when an admin is signed in.
 const INDEED_FIX = { 'indeed-cory-williams': 'df72fb8b874b', 'indeed-frantz-jerry-costume': '4bf7b17f6601', 'indeed-jason-cotellessa': '44f6fc2da1f0', 'indeed-anthony-ortiz': 'be3c70ab22d0', 'indeed-jake-brown': 'a5479fede342', 'indeed-salvatore-mannino': 'b101d779005b', 'indeed-rashid-dunbar': 'a1ead0894fe3', 'indeed-james-marshall': 'cd06d21a627c', 'indeed-zohan-farbisner': '2726f98e523d', 'indeed-giorgio-arroyave': '7a07dd796c45', 'indeed-luann-barcello': '4af38cdd7b1d', 'indeed-vanessa-davalos': '1c8ed3df489d', 'indeed-liz-diaz': '0c76828d5b3d', 'indeed-jason-patrick': '14d5721501e4' };
-const CITY_FIX = { 'indeed-837541f5b379': 'Brick, NJ' };
+const CITY_FIX = { 'indeed-837541f5b379': 'Brick, NJ', 'indeed-b487391c824d': 'Edison, NJ' };
 let fixRan = false;
 function indeedIdFrom(v) { const t = String(v || '').trim(); const m = t.match(/(?:\?|&|%3F|%26)id(?:=|%3D)([0-9a-f]{8,})/i) || t.match(/^([0-9a-f]{10,})$/i); const id = m ? m[1].toLowerCase() : ''; return id === 'dc4de1264186' ? '' : id; }
 async function applyIndeedFix() {
