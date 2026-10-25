@@ -333,8 +333,8 @@ tabs.forEach((b) => b.addEventListener('click', () => showTab(b.dataset.tab)));
 /* ---------- constants ---------- */
 const SOURCES = ['Website', 'Indeed', 'ZipRecruiter', 'Facebook post', 'Facebook group', 'Instagram', 'WhatsApp', 'Referral', 'Flyer / QR', 'Craigslist', 'LinkedIn', 'Nextdoor', 'Google', 'One-Stop', 'Walk-in / call', 'Other'];
 const CDLS = ['Unknown', 'No CDL, willing to train', 'Has CDL, needs P/S', 'Has CDL with P & S'];
-const STAGES = ['New', 'Contacted', 'Interested', 'Interview set', 'Paperwork / training', 'Hired', 'Not now'];
-const CLOSED = ['Hired', 'Not now'];
+const STAGES = ['New', 'Contacted', 'Interested', 'Interview set', 'Paperwork / training', 'Hired', 'Not now', 'Too far'];
+const CLOSED = ['Hired', 'Not now', 'Too far'];
 const LABELS = { type: 'Type', source: 'Source', fullName: 'Full name', organization: 'Organization', phone: 'Phone', email: 'Email', city: 'Town', zip: 'ZIP', within40: 'Within 40 min of Lakewood / Toms River', over21: 'At least 21', hasCdl: 'Holds CDL', cdlClass: 'CDL class', cdlState: 'License state', endorsements: 'Endorsements', cleanRecord: 'Clean driving record', recordExplain: 'Driving record explanation', experienceYears: 'School bus experience', lastEmployer: 'Most recent employer', otherExperience: 'Other passenger experience', positionType: 'Position wanted', startDate: 'Earliest start', reliableTransport: 'Reliable transportation', canPass: 'Able to pass', hearAbout: 'Heard about us', referral: 'Referred by', notes: 'Their message', consent: 'Consent', submittedFrom: 'Submitted from', license: 'License', next: 'Follow up on', adminNotes: 'Your notes', status: 'Stage' };
 const HIDDEN = new Set(['indeedId', 'notes', 'id', 'createdAt', 'updatedAt', 'status', 'next', 'adminNotes', 'license', 'source', 'type', 'fullName', 'phone', 'email', 'submittedFrom']);
 const opts = (arr, sel) => arr.map((v) => `<option ${v === sel ? 'selected' : ''}>${esc(v)}</option>`).join('');
