@@ -675,7 +675,6 @@ function renderLeads() {
           <div class="field"><label>Follow up on</label><input type="date" data-f="next" value="${esc(l.next || '')}"></div>
           <div class="field"><label>Source</label><select data-f="source">${opts(SOURCES, l.source || 'Website')}</select></div>
           <div class="field"><label>License</label><select data-f="license">${opts(CDLS, lic || 'Unknown')}</select></div>
-          ${l.source === 'Indeed' ? `<div class="field span2"><label>Indeed candidate link</label><input data-f="indeedId" value="${esc(l.indeedId || '')}" placeholder="Open the person in Indeed, copy the page address, paste it here, then Save"></div>` : ''}
           <div class="field span2"><label>Your notes</label><textarea data-f="adminNotes" rows="3">${esc(l.adminNotes || '')}</textarea></div>
         </div>
         <div class="rowx"><button class="btn sm" data-save="${l.id}" type="button">Save</button><button class="btn outline sm" data-copydm="${l.id}" type="button">Copy follow-up text</button>${l.email ? `<a class="btn outline sm" href="mailto:${esc(l.email)}">Email</a>` : ''}<button class="btn danger sm" data-del="${l.id}" type="button">Delete</button>
