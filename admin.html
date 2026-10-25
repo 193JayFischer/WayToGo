@@ -326,7 +326,7 @@ const CDLS = ['Unknown', 'No CDL, willing to train', 'Has CDL, needs P/S', 'Has 
 const STAGES = ['New', 'Contacted', 'Interested', 'Interview set', 'Paperwork / training', 'Hired', 'Not now'];
 const CLOSED = ['Hired', 'Not now'];
 const LABELS = { type: 'Type', source: 'Source', fullName: 'Full name', organization: 'Organization', phone: 'Phone', email: 'Email', city: 'Town', zip: 'ZIP', within40: 'Within 40 min of Lakewood / Toms River', over21: 'At least 21', hasCdl: 'Holds CDL', cdlClass: 'CDL class', cdlState: 'License state', endorsements: 'Endorsements', cleanRecord: 'Clean driving record', recordExplain: 'Driving record explanation', experienceYears: 'School bus experience', lastEmployer: 'Most recent employer', otherExperience: 'Other passenger experience', positionType: 'Position wanted', startDate: 'Earliest start', reliableTransport: 'Reliable transportation', canPass: 'Able to pass', hearAbout: 'Heard about us', referral: 'Referred by', notes: 'Their message', consent: 'Consent', submittedFrom: 'Submitted from', license: 'License', next: 'Follow up on', adminNotes: 'Your notes', status: 'Stage' };
-const HIDDEN = new Set(['id', 'createdAt', 'updatedAt', 'status', 'next', 'adminNotes', 'license', 'source', 'type', 'fullName', 'phone', 'email', 'submittedFrom']);
+const HIDDEN = new Set(['indeedId', 'id', 'createdAt', 'updatedAt', 'status', 'next', 'adminNotes', 'license', 'source', 'type', 'fullName', 'phone', 'email', 'submittedFrom']);
 const opts = (arr, sel) => arr.map((v) => `<option ${v === sel ? 'selected' : ''}>${esc(v)}</option>`).join('');
 $('l_source').innerHTML = opts(SOURCES, 'Facebook post'); $('l_cdl').innerHTML = opts(CDLS); $('l_stage').innerHTML = opts(STAGES, 'New');
 $('f_stage').insertAdjacentHTML('beforeend', opts(STAGES)); $('f_source').insertAdjacentHTML('beforeend', opts(SOURCES));
@@ -588,6 +588,14 @@ const { db, auth, fs, authLib } = fb;
 const col = fs.collection(db, 'applications');
 const docRef = (id) => fs.doc(db, 'applications', id);
 let leads = [];
+// Indeed candidate ids for leads that were added from screenshots before their emails were matched. Applied once by the hub when an admin is signed in.
+const INDEED_FIX = { 'indeed-cory-williams': 'df72fb8b874b', 'indeed-frantz-jerry-costume': '4bf7b17f6601', 'indeed-jason-cotellessa': '44f6fc2da1f0', 'indeed-anthony-ortiz': 'be3c70ab22d0', 'indeed-jake-brown': 'a5479fede342', 'indeed-salvatore-mannino': 'b101d779005b', 'indeed-rashid-dunbar': 'a1ead0894fe3', 'indeed-james-marshall': 'cd06d21a627c', 'indeed-zohan-farbisner': '2726f98e523d', 'indeed-giorgio-arroyave': '7a07dd796c45', 'indeed-luann-barcello': '4af38cdd7b1d', 'indeed-vanessa-davalos': '1c8ed3df489d', 'indeed-liz-diaz': '0c76828d5b3d', 'indeed-jason-patrick': '14d5721501e4' };
+let fixRan = false;
+function indeedIdFrom(v) { const m = String(v || '').match(/id(?:%3D|=)([0-9a-f]{8,})/i) || String(v || '').match(/^([0-9a-f]{10,})$/i); return m ? m[1].toLowerCase() : ''; }
+async function applyIndeedFix() {
+  if (fixRan) return; fixRan = true;
+  for (const l of leads) { const hex = INDEED_FIX[l.id]; if (hex && !l.indeedId) { try { await fs.updateDoc(docRef(l.id), { indeedId: hex, updatedAt: fs.serverTimestamp() }); } catch (e) { /* not admin or offline; try again next load */ fixRan = false; } } }
+}
 let unsubs = [];
 
 function tsToIso(v) { if (!v) return ''; if (typeof v.toDate === 'function') return v.toDate().toISOString(); const d = new Date(v); return isNaN(d) ? '' : d.toISOString(); }
@@ -597,6 +605,7 @@ function startListening() {
   const q = fs.query(col, fs.orderBy('createdAt', 'desc'));
   unsubs.push(fs.onSnapshot(q, (snap) => {
     leads = snap.docs.map((d) => { const o = d.data(); return { ...o, id: d.id, createdAt: tsToIso(o.createdAt), updatedAt: tsToIso(o.updatedAt) }; });
+    applyIndeedFix();
     $('leads-error').style.display = 'none';
     renderLeads();
   }, (err) => {
@@ -666,6 +675,7 @@ function renderLeads() {
           <div class="field"><label>Follow up on</label><input type="date" data-f="next" value="${esc(l.next || '')}"></div>
           <div class="field"><label>Source</label><select data-f="source">${opts(SOURCES, l.source || 'Website')}</select></div>
           <div class="field"><label>License</label><select data-f="license">${opts(CDLS, lic || 'Unknown')}</select></div>
+          ${l.source === 'Indeed' ? `<div class="field span2"><label>Indeed candidate link</label><input data-f="indeedId" value="${esc(l.indeedId || '')}" placeholder="Open the person in Indeed, copy the page address, paste it here, then Save"></div>` : ''}
           <div class="field span2"><label>Your notes</label><textarea data-f="adminNotes" rows="3">${esc(l.adminNotes || '')}</textarea></div>
         </div>
         <div class="rowx"><button class="btn sm" data-save="${l.id}" type="button">Save</button><button class="btn outline sm" data-copydm="${l.id}" type="button">Copy follow-up text</button>${l.email ? `<a class="btn outline sm" href="mailto:${esc(l.email)}">Email</a>` : ''}<button class="btn danger sm" data-del="${l.id}" type="button">Delete</button>
@@ -678,7 +688,7 @@ $('leadList').addEventListener('change', (e) => { const id = e.target.dataset.st
 $('leadList').addEventListener('click', async (e) => {
   const b = e.target.closest('button'); if (!b) return; const d = b.dataset;
   if (d.open) { b.closest('.ld').classList.toggle('open'); return; }
-  if (d.save) { const card = b.closest('.ld'); const patch = {}; card.querySelectorAll('[data-f]').forEach((el) => { patch[el.dataset.f] = el.value.trim(); }); patchLead(d.save, patch); return; }
+  if (d.save) { const card = b.closest('.ld'); const patch = {}; card.querySelectorAll('[data-f]').forEach((el) => { patch[el.dataset.f] = el.value.trim(); }); if ('indeedId' in patch) patch.indeedId = indeedIdFrom(patch.indeedId); patchLead(d.save, patch); return; }
   if (d.copydm) { const l = leads.find((x) => x.id === d.copydm); const tpl = ($('tpl_follow') ? $('tpl_follow').value : TPLS().find((t) => t.k === 'follow').text).replace('[NAME]', (l.fullName || '').split(' ')[0] || 'there'); copyText(tpl); return; }
   if (d.del) { $('leadList').querySelector(`[data-confirm="${d.del}"]`).classList.add('on'); return; }
   if (d.delno) { $('leadList').querySelector(`[data-confirm="${d.delno}"]`).classList.remove('on'); return; }
