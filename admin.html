@@ -607,7 +607,7 @@ function townKey(l) {
 }
 function townLabel(l) { const c = String(l.city || '').trim(); if (c) return /nj|pa|ny/i.test(c) ? c : c + ', NJ'; const z = String(l.zip || '').trim().slice(0, 5); if (ZIPS[z]) return ZIPS[z].replace(/\b\w/g, (m) => m.toUpperCase()) + ' (' + z + ')'; return z ? 'ZIP ' + z : ''; }
 function haversine(a, b) { const R = 3958.8, toR = (x) => x * Math.PI / 180; const dLat = toR(b[0] - a[0]), dLng = toR(b[1] - a[1]); const h = Math.sin(dLat / 2) ** 2 + Math.cos(toR(a[0])) * Math.cos(toR(b[0])) * Math.sin(dLng / 2) ** 2; return 2 * R * Math.asin(Math.sqrt(h)); }
-function estimate(pt) { const straight = haversine([YARD.lat, YARD.lng], pt); const mi = straight * 1.25; const mph = mi < 8 ? 24 : mi < 25 ? 32 : 45; return { mi: Math.round(mi * 10) / 10, min: Math.round(mi / mph * 60 + 3), src: 'est' }; }
+function estimate(pt) { const straight = haversine([YARD.lat, YARD.lng], pt); const mi = straight * 1.2; const local = Math.min(mi, 8), mid = Math.min(Math.max(mi - 8, 0), 17), hwy = Math.max(mi - 25, 0); return { mi: Math.round(mi * 10) / 10, min: Math.round(3 + local * 2.0 + mid * 1.45 + hwy * 1.1), src: 'est' }; }
 async function routeOsrm(pt) {
   const r = await fetch(`https://router.project-osrm.org/route/v1/driving/${YARD.lng},${YARD.lat};${pt[1]},${pt[0]}?overview=false`); if (!r.ok) throw new Error('osrm');
   const j = await r.json(); const rt = j.routes && j.routes[0]; if (!rt) throw new Error('noroute');
