@@ -335,8 +335,8 @@ tabs.forEach((b) => b.addEventListener('click', () => showTab(b.dataset.tab)));
 /* ---------- constants ---------- */
 const SOURCES = ['Website', 'Indeed', 'ZipRecruiter', 'Facebook post', 'Facebook group', 'Instagram', 'WhatsApp', 'Referral', 'Flyer / QR', 'Craigslist', 'LinkedIn', 'Nextdoor', 'Google', 'One-Stop', 'Walk-in / call', 'Other'];
 const CDLS = ['Unknown', 'No CDL, willing to train', 'Has CDL, needs P/S', 'Has CDL with P & S'];
-const STAGES = ['New', 'Contacted', 'Interested', 'Interview set', 'Paperwork / training', 'Hired', 'Not now', 'Too far'];
-const CLOSED = ['Hired', 'Not now', 'Too far'];
+const STAGES = ['New', 'Contacted', 'Interested', 'Interview set', 'Paperwork / training', 'Insurance pending', 'Hired', 'Not now', 'Too far', 'License denied'];
+const CLOSED = ['Hired', 'Not now', 'Too far', 'License denied'];
 const LABELS = { type: 'Type', source: 'Source', fullName: 'Full name', organization: 'Organization', phone: 'Phone', email: 'Email', city: 'Town', zip: 'ZIP', within40: 'Within 40 min of Lakewood / Toms River', over21: 'At least 21', hasCdl: 'Holds CDL', cdlClass: 'CDL class', cdlState: 'License state', endorsements: 'Endorsements', cleanRecord: 'Clean driving record', recordExplain: 'Driving record explanation', experienceYears: 'School bus experience', lastEmployer: 'Most recent employer', otherExperience: 'Other passenger experience', positionType: 'Position wanted', startDate: 'Earliest start', reliableTransport: 'Reliable transportation', canPass: 'Able to pass', hearAbout: 'Heard about us', referral: 'Referred by', notes: 'Their message', consent: 'Consent', submittedFrom: 'Submitted from', license: 'License', next: 'Follow up on', adminNotes: 'Your notes', status: 'Stage' };
 const HIDDEN = new Set(['indeedId', 'notes', 'id', 'createdAt', 'updatedAt', 'status', 'next', 'adminNotes', 'license', 'source', 'type', 'fullName', 'phone', 'email', 'submittedFrom']);
 const opts = (arr, sel) => arr.map((v) => `<option ${v === sel ? 'selected' : ''}>${esc(v)}</option>`).join('');
@@ -729,7 +729,7 @@ $('login-form').addEventListener('submit', async (ev) => {
 $('logout').addEventListener('click', () => authLib.signOut(auth));
 
 /* ---------- leads ---------- */
-function stageClass(l) { if (CLOSED.includes(l.status)) return 'cold'; if (l.next && l.next <= today()) return 'due'; if (['Interested', 'Interview set', 'Paperwork / training'].includes(l.status)) return 'hot'; if (l.status === 'New' || !l.status) return 'new'; return ''; }
+function stageClass(l) { if (CLOSED.includes(l.status)) return 'cold'; if (l.next && l.next <= today()) return 'due'; if (['Interested', 'Interview set', 'Paperwork / training', 'Insurance pending'].includes(l.status)) return 'hot'; if (l.status === 'New' || !l.status) return 'new'; return ''; }
 function licenseOf(l) { if (l.license) return l.license; if (l.hasCdl) { if (/^yes/i.test(l.hasCdl)) { const e = (l.endorsements || []).join(' '); return /P/.test(e) && /S/.test(e) ? 'Has CDL with P & S' : 'Has CDL, needs P/S'; } return 'No CDL, willing to train'; } return ''; }
 let renderPending = false;
 function renderLeads() {
