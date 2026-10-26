@@ -321,6 +321,8 @@ const linkify = (s) => esc(s).replace(/https?:\/\/[^\s<]+/g, (u) => { const labe
 const toast = (m) => { const t = $('toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('on'), 1600); };
 const copyText = async (text) => { try { await navigator.clipboard.writeText(text); toast('Copied'); } catch (e) { const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); toast('Copied'); } catch (_) { toast('Select the text and copy it manually'); } ta.remove(); } };
 const today = () => new Date().toISOString().slice(0, 10);
+// Sunday that starts the current week, as YYYY-MM-DD in local time.
+const weekStart = () => { const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - d.getDay()); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
 const addDays = (n) => { const d = new Date(); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); };
 const SITE = location.origin + location.pathname.replace(/[^/]*$/, '');
 const APPLY_URL = SITE + 'apply.html';
@@ -742,7 +744,7 @@ function renderLeads() {
 document.addEventListener('focusout', (e) => { if (renderPending && $('leadList').contains(e.target)) setTimeout(() => { if (renderPending) renderLeads(); }, 150); });
 function renderLeadsNow() {
   const q = $('f_q').value.trim().toLowerCase(), ft = $('f_type').value, fs_ = $('f_stage').value, fsrc = $('f_source').value, sort = $('f_sort').value;
-  const t = today(), wk = addDays(-7);
+  const t = today(), wk = weekStart();
   const open = leads.filter((l) => !CLOSED.includes(l.status));
   $('leadCount').textContent = open.length;
   $('stats').innerHTML = [['Open leads', open.length], ['Due today', open.filter((l) => l.next && l.next <= t).length], ['New this week', leads.filter((l) => (l.createdAt || '').slice(0, 10) >= wk).length], ['Inquiries', leads.filter((l) => l.type === 'Service inquiry').length], ['In training', leads.filter((l) => l.status === 'Paperwork / training').length], ['Hired', leads.filter((l) => l.status === 'Hired').length]].map(([k, v]) => `<div class="stat"><b>${v}</b><span>${k}</span></div>`).join('');
