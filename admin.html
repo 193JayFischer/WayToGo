@@ -338,7 +338,7 @@ const CDLS = ['Unknown', 'No CDL, willing to train', 'Has CDL, needs P/S', 'Has 
 const STAGES = ['New', 'Contacted', 'Interested', 'Interview set', 'Paperwork / training', 'Insurance pending', 'Hired', 'Not now', 'Too far', 'License denied'];
 const CLOSED = ['Hired', 'Not now', 'Too far', 'License denied'];
 const LABELS = { type: 'Type', source: 'Source', fullName: 'Full name', organization: 'Organization', phone: 'Phone', email: 'Email', city: 'Town', zip: 'ZIP', within40: 'Within 40 min of Lakewood / Toms River', over21: 'At least 21', hasCdl: 'Holds CDL', cdlClass: 'CDL class', cdlState: 'License state', endorsements: 'Endorsements', cleanRecord: 'Clean driving record', recordExplain: 'Driving record explanation', experienceYears: 'School bus experience', lastEmployer: 'Most recent employer', otherExperience: 'Other passenger experience', positionType: 'Position wanted', startDate: 'Earliest start', reliableTransport: 'Reliable transportation', canPass: 'Able to pass', hearAbout: 'Heard about us', referral: 'Referred by', notes: 'Their message', consent: 'Consent', submittedFrom: 'Submitted from', license: 'License', next: 'Follow up on', adminNotes: 'Your notes', status: 'Stage' };
-const HIDDEN = new Set(['indeedId', 'notes', 'id', 'createdAt', 'updatedAt', 'status', 'next', 'adminNotes', 'license', 'source', 'type', 'fullName', 'phone', 'email', 'submittedFrom']);
+const HIDDEN = new Set(['indeedId', 'notes', 'city', 'id', 'createdAt', 'updatedAt', 'status', 'next', 'adminNotes', 'license', 'source', 'type', 'fullName', 'phone', 'email', 'submittedFrom']);
 const opts = (arr, sel) => arr.map((v) => `<option ${v === sel ? 'selected' : ''}>${esc(v)}</option>`).join('');
 $('l_source').innerHTML = opts(SOURCES, 'Facebook post'); $('l_cdl').innerHTML = opts(CDLS); $('l_stage').innerHTML = opts(STAGES, 'New');
 $('f_stage').insertAdjacentHTML('beforeend', opts(STAGES)); $('f_source').insertAdjacentHTML('beforeend', opts(SOURCES));
@@ -767,9 +767,9 @@ function renderLeadsNow() {
       <div class="more">
         ${extra ? `<div class="kv">${extra}</div>` : ''}
         <div class="grid2">
+          <div class="field"><label>Town</label><input data-f="city" value="${esc(l.city || '')}" placeholder="Brick, NJ"></div>
           <div class="field"><label>Phone</label><input data-f="phone" value="${esc(l.phone || '')}"></div>
           <div class="field"><label>Email</label><input data-f="email" value="${esc(l.email || '')}"></div>
-          <div class="field"><label>Town</label><input data-f="city" value="${esc(l.city || '')}" placeholder="Brick, NJ"></div>
           <div class="field"><label>Follow up on</label><input type="date" data-f="next" value="${esc(l.next || '')}"></div>
           <div class="field"><label>Source</label><select data-f="source">${opts(SOURCES, l.source || 'Website')}</select></div>
           <div class="field"><label>License</label><select data-f="license">${opts(CDLS, lic || 'Unknown')}</select></div>
