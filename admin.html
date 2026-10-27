@@ -654,7 +654,7 @@ async function runGeoQueue() {
 function firstText(l) { const t = TPLS().find((x) => x.k === 'first'); return (t ? t.text : '').replace('[NAME]', (l.fullName || '').split(' ')[0] || 'there'); }
 function phoneDigits(p) { let d = String(p || '').replace(/\D/g, ''); if (d.length === 10) d = '1' + d; return d; }
 function smsLink(l) { return `sms:+${phoneDigits(l.phone)}?&body=${encodeURIComponent(firstText(l))}`; }
-function waLink(l) { return `https://wa.me/${phoneDigits(l.phone)}?text=${encodeURIComponent(firstText(l))}`; }
+function leadWaLink(l) { return `https://wa.me/${phoneDigits(l.phone)}?text=${encodeURIComponent(firstText(l))}`; }
 function updateLocLines() { document.querySelectorAll('#leadList .ld').forEach((card) => { const l = leads.find((x) => x.id === card.dataset.id); const el = card.querySelector('.loc'); if (l && el) { const tmp = document.createElement('div'); tmp.innerHTML = locLine(l); el.replaceWith(tmp.firstElementChild); } }); }
 function locLine(l) {
   const label = townLabel(l); if (!label) return `<div class="loc unknown">📍 Town not provided</div>`;
@@ -767,7 +767,7 @@ function renderLeadsNow() {
     return `<div class="ld ${stageClass(l)}" data-id="${l.id}">
       <div><div class="who">${esc(l.fullName || '(no name)')}</div>
       ${locLine(l)}
-      ${l.phone ? `<div class="tel">📞 <a href="tel:${esc(l.phone)}">${esc(l.phone)}</a> <a class="btn sm" href="${smsLink(l)}">Text</a> <a class="btn outline sm" href="${waLink(l)}" target="_blank" rel="noopener">WhatsApp</a></div>` : `<div class="tel none">📞 No phone${l.source === 'Indeed' ? ' (see Indeed)' : ''}</div>`}
+      ${l.phone ? `<div class="tel">📞 <a href="tel:${esc(l.phone)}">${esc(l.phone)}</a> <a class="btn sm" href="${smsLink(l)}">Text</a> <a class="btn outline sm" href="${leadWaLink(l)}" target="_blank" rel="noopener">WhatsApp</a></div>` : `<div class="tel none">📞 No phone${l.source === 'Indeed' ? ' (see Indeed)' : ''}</div>`}
       <div class="meta"><span class="chip type ${type === 'Service inquiry' ? 'inq' : type === 'Lead' ? 'lead' : ''}">${esc(type)}</span><span class="chip">${esc(l.source || 'Website')}</span>${isDup(l) ? '<span class="chip dup">Possible duplicate</span>' : ''}${lic ? `<span class="chip">${esc(lic)}</span>` : ''}${l.organization ? `<span>${esc(l.organization)}</span>` : ''}<span>${fmt(l.createdAt)}</span>${l.next ? `<span>Follow up ${esc(l.next)}${l.next <= t && !closed ? ' (due)' : ''}</span>` : ''}</div></div>
       <div class="ctl"><select data-stage="${l.id}">${opts(STAGES, l.status || 'New')}</select><button class="btn outline sm" data-open="${l.id}" type="button">Details</button>${l.indeedId ? `<a class="btn sm" href="https://account.indeed.com/o/myaccess/switch/confirm?employerId=1fb47a09cf9a8c0a7b43cc05a95deb64&continue=https%3A%2F%2Femployers.indeed.com%2Fcandidates%2Fview%3Fid%3D${esc(l.indeedId)}" target="_blank" rel="noopener">Open in Indeed</a>` : l.source === 'Indeed' ? `<a class="btn sm" href="https://employers.indeed.com/candidates?id=dc4de1264186&statusName=All" target="_blank" rel="noopener">Find in Indeed</a>` : ''}</div>
       ${cleanNotes(l) ? `<div class="notes">${linkify(cleanNotes(l))}</div>` : ''}
