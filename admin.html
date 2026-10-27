@@ -349,11 +349,13 @@ const SOURCES = ['Website', 'Indeed', 'ZipRecruiter', 'Facebook post', 'Facebook
 const CDLS = ['Unknown', 'No CDL, willing to train', 'Has CDL, needs P/S', 'Has CDL with P & S'];
 const STAGES = ['New', 'Contacted', 'Interested', 'Interview set', 'Paperwork / training', 'Insurance pending', 'Hired', 'Not now', 'Too far', 'License denied'];
 const CLOSED = ['Hired', 'Not now', 'Too far', 'License denied'];
+// Stages used only on the Active tab, in order. Moving a lead to Active puts them at the first one.
+const ACTIVE_STAGES = ['Interview / application', 'Fingerprint', 'Training', 'Road test'];
 const LABELS = { type: 'Type', source: 'Source', fullName: 'Full name', organization: 'Organization', phone: 'Phone', email: 'Email', city: 'Town', zip: 'ZIP', within40: 'Within 40 min of Lakewood / Toms River', over21: 'At least 21', hasCdl: 'Holds CDL', cdlClass: 'CDL class', cdlState: 'License state', endorsements: 'Endorsements', cleanRecord: 'Clean driving record', recordExplain: 'Driving record explanation', experienceYears: 'School bus experience', lastEmployer: 'Most recent employer', otherExperience: 'Other passenger experience', positionType: 'Position wanted', startDate: 'Earliest start', reliableTransport: 'Reliable transportation', canPass: 'Able to pass', hearAbout: 'Heard about us', referral: 'Referred by', notes: 'Their message', consent: 'Consent', submittedFrom: 'Submitted from', license: 'License', next: 'Follow up on', adminNotes: 'Your notes', status: 'Stage' };
 const HIDDEN = new Set(['indeedId', 'notes', 'city', 'tracked', 'id', 'createdAt', 'updatedAt', 'status', 'next', 'adminNotes', 'license', 'source', 'type', 'fullName', 'phone', 'email', 'submittedFrom']);
 const opts = (arr, sel) => arr.map((v) => `<option ${v === sel ? 'selected' : ''}>${esc(v)}</option>`).join('');
 $('l_source').innerHTML = opts(SOURCES, 'Facebook post'); $('l_cdl').innerHTML = opts(CDLS); $('l_stage').innerHTML = opts(STAGES, 'New');
-$('f_stage').insertAdjacentHTML('beforeend', opts(STAGES)); $('f_source').insertAdjacentHTML('beforeend', opts(SOURCES));
+$('f_stage').insertAdjacentHTML('beforeend', opts(STAGES.concat(ACTIVE_STAGES))); $('f_source').insertAdjacentHTML('beforeend', opts(SOURCES));
 $('l_next').value = addDays(2);
 
 /* ---------- company details ---------- */
@@ -747,7 +749,7 @@ $('login-form').addEventListener('submit', async (ev) => {
 $('logout').addEventListener('click', () => authLib.signOut(auth));
 
 /* ---------- leads ---------- */
-function stageClass(l) { if (CLOSED.includes(l.status)) return 'cold'; if (l.next && l.next <= today()) return 'due'; if (['Interested', 'Interview set', 'Paperwork / training', 'Insurance pending'].includes(l.status)) return 'hot'; if (l.status === 'New' || !l.status) return 'new'; return ''; }
+function stageClass(l) { if (CLOSED.includes(l.status)) return 'cold'; if (l.next && l.next <= today()) return 'due'; if (['Interested', 'Interview set', 'Paperwork / training', 'Insurance pending'].concat(ACTIVE_STAGES).includes(l.status)) return 'hot'; if (l.status === 'New' || !l.status) return 'new'; return ''; }
 function licenseOf(l) { if (l.license) return l.license; if (l.hasCdl) { if (/^yes/i.test(l.hasCdl)) { const e = (l.endorsements || []).join(' '); return /P/.test(e) && /S/.test(e) ? 'Has CDL with P & S' : 'Has CDL, needs P/S'; } return 'No CDL, willing to train'; } return ''; }
 let renderPending = false;
 function renderLeads() {
@@ -765,7 +767,7 @@ function renderLeadsNow() {
   const t = today(), wk = weekStart();
   const open = leads.filter((l) => !CLOSED.includes(l.status));
   $('leadCount').textContent = open.length;
-  $('stats').innerHTML = [['Open leads', open.length], ['Due today', open.filter((l) => l.next && l.next <= t).length], ['New this week', leads.filter((l) => (l.createdAt || '').slice(0, 10) >= wk).length], ['Inquiries', leads.filter((l) => l.type === 'Service inquiry').length], ['In training', leads.filter((l) => l.status === 'Paperwork / training').length], ['Hired', leads.filter((l) => l.status === 'Hired').length]].map(([k, v]) => `<div class="stat"><b>${v}</b><span>${k}</span></div>`).join('');
+  $('stats').innerHTML = [['Open leads', open.length], ['Due today', open.filter((l) => l.next && l.next <= t).length], ['New this week', leads.filter((l) => (l.createdAt || '').slice(0, 10) >= wk).length], ['Inquiries', leads.filter((l) => l.type === 'Service inquiry').length], ['In training', leads.filter((l) => l.status === 'Paperwork / training' || l.status === 'Training').length], ['Hired', leads.filter((l) => l.status === 'Hired').length]].map(([k, v]) => `<div class="stat"><b>${v}</b><span>${k}</span></div>`).join('');
   const seen = {}; const norm = (v) => String(v || '').toLowerCase().replace(/[^a-z0-9]/g, '');
   leads.forEach((l) => { const n = norm(l.fullName), p = norm(l.phone), e = norm(l.email); if (n) seen['n' + n] = (seen['n' + n] || 0) + 1; if (p) seen['p' + p] = (seen['p' + p] || 0) + 1; if (e) seen['e' + e] = (seen['e' + e] || 0) + 1; });
   const isDup = (l) => (seen['n' + norm(l.fullName)] > 1) || (norm(l.phone) && seen['p' + norm(l.phone)] > 1) || (norm(l.email) && seen['e' + norm(l.email)] > 1);
@@ -787,7 +789,7 @@ function cardHtml(l, isDup) {
       ${locLine(l)}
       ${l.phone ? `<div class="tel">📞 <a href="tel:${esc(l.phone)}">${esc(l.phone)}</a> <a class="btn sm" href="${smsLink(l)}">Text</a> <a class="btn outline sm" href="${leadWaLink(l)}" target="_blank" rel="noopener">WhatsApp</a></div>` : `<div class="tel none">📞 No phone${l.source === 'Indeed' ? ' (see Indeed)' : ''}</div>`}
       <div class="meta"><span class="chip type ${type === 'Service inquiry' ? 'inq' : type === 'Lead' ? 'lead' : ''}">${esc(type)}</span><span class="chip">${esc(l.source || 'Website')}</span>${isDup(l) ? '<span class="chip dup">Possible duplicate</span>' : ''}${lic ? `<span class="chip">${esc(lic)}</span>` : ''}${l.organization ? `<span>${esc(l.organization)}</span>` : ''}<span>${fmt(l.createdAt)}</span>${l.next ? `<span>Follow up ${esc(l.next)}${l.next <= t && !closed ? ' (due)' : ''}</span>` : ''}</div></div>
-      <div class="ctl"><select data-stage="${l.id}">${opts(STAGES, l.status || 'New')}</select><button class="btn outline sm" data-open="${l.id}" type="button">Details</button><button class="btn ${l.tracked ? 'outline' : 'blue'} sm" data-track="${l.id}" type="button">${l.tracked ? 'Remove from Active' : 'Move to Active'}</button>${l.indeedId ? `<a class="btn sm" href="https://account.indeed.com/o/myaccess/switch/confirm?employerId=1fb47a09cf9a8c0a7b43cc05a95deb64&continue=https%3A%2F%2Femployers.indeed.com%2Fcandidates%2Fview%3Fid%3D${esc(l.indeedId)}" target="_blank" rel="noopener">Open in Indeed</a>` : l.source === 'Indeed' ? `<a class="btn sm" href="https://employers.indeed.com/candidates?id=dc4de1264186&statusName=All" target="_blank" rel="noopener">Find in Indeed</a>` : ''}</div>
+      <div class="ctl"><select data-stage="${l.id}">${opts(l.tracked ? ACTIVE_STAGES : STAGES, l.status || (l.tracked ? ACTIVE_STAGES[0] : 'New'))}</select><button class="btn outline sm" data-open="${l.id}" type="button">Details</button><button class="btn ${l.tracked ? 'outline' : 'blue'} sm" data-track="${l.id}" type="button">${l.tracked ? 'Remove from Active' : 'Move to Active'}</button>${l.indeedId ? `<a class="btn sm" href="https://account.indeed.com/o/myaccess/switch/confirm?employerId=1fb47a09cf9a8c0a7b43cc05a95deb64&continue=https%3A%2F%2Femployers.indeed.com%2Fcandidates%2Fview%3Fid%3D${esc(l.indeedId)}" target="_blank" rel="noopener">Open in Indeed</a>` : l.source === 'Indeed' ? `<a class="btn sm" href="https://employers.indeed.com/candidates?id=dc4de1264186&statusName=All" target="_blank" rel="noopener">Find in Indeed</a>` : ''}</div>
       ${cleanNotes(l) ? `<div class="notes">${linkify(cleanNotes(l))}</div>` : ''}
       <div class="more">
         ${extra ? `<div class="kv">${extra}</div>` : ''}
@@ -811,7 +813,7 @@ list.addEventListener('change', (e) => { const id = e.target.dataset.stage; if (
 list.addEventListener('click', async (e) => {
   const b = e.target.closest('button'); if (!b) return; const d = b.dataset;
   if (d.open) { b.closest('.ld').classList.toggle('open'); return; }
-  if (d.track) { const l = leads.find((x) => x.id === d.track); patchLead(d.track, { tracked: !(l && l.tracked) }); return; }
+  if (d.track) { const l = leads.find((x) => x.id === d.track) || {}; const toActive = !l.tracked; const patch = { tracked: toActive }; if (toActive && !ACTIVE_STAGES.includes(l.status)) { patch.status = ACTIVE_STAGES[0]; if (!l.next) patch.next = addDays(1); } if (!toActive && ACTIVE_STAGES.includes(l.status)) patch.status = 'Interested'; patchLead(d.track, patch); return; }
   if (d.save) { const card = b.closest('.ld'); const patch = {}; card.querySelectorAll('[data-f]').forEach((el) => { patch[el.dataset.f] = el.value.trim(); }); if ('indeedId' in patch) patch.indeedId = indeedIdFrom(patch.indeedId); patchLead(d.save, patch); return; }
   if (d.copydm) { const l = leads.find((x) => x.id === d.copydm); const tpl = ($('tpl_follow') ? $('tpl_follow').value : TPLS().find((t) => t.k === 'follow').text).replace('[NAME]', (l.fullName || '').split(' ')[0] || 'there'); copyText(tpl); return; }
   if (d.del) { b.closest('.ld').querySelector(`[data-confirm="${d.del}"]`).classList.add('on'); return; }
