@@ -773,7 +773,7 @@ function renderLeadsNow() {
   const isDup = (l) => (seen['n' + norm(l.fullName)] > 1) || (norm(l.phone) && seen['p' + norm(l.phone)] > 1) || (norm(l.email) && seen['e' + norm(l.email)] > 1);
   let rows = leads.filter((l) => (!ft || (l.type || 'Lead') === ft) && (!fs_ || (l.status || 'New') === fs_) && (!fsrc || l.source === fsrc) && (!q || [l.fullName, l.phone, l.email, l.city, l.organization, l.notes, l.adminNotes, l.source].join(' ').toLowerCase().includes(q)));
   rows.sort((a, b) => { if (sort === 'name') return (a.fullName || '').localeCompare(b.fullName || ''); if (sort === 'created') return (b.createdAt || '').localeCompare(a.createdAt || ''); const ad = CLOSED.includes(a.status), bd = CLOSED.includes(b.status); if (ad !== bd) return ad ? 1 : -1; return (a.next || '9999').localeCompare(b.next || '9999') || (b.createdAt || '').localeCompare(a.createdAt || ''); });
-  const addedAt = (l) => l.trackedAt || tsIso(l.updatedAt) || tsIso(l.createdAt) || ''; const active = leads.filter((l) => l.tracked).sort((a, b) => addedAt(a).localeCompare(addedAt(b)));
+  const addedAt = (l) => l.trackedAt || tsIso(l.updatedAt) || tsIso(l.createdAt) || ''; const active = leads.filter((l) => l.tracked).sort((a, b) => addedAt(b).localeCompare(addedAt(a)));
   $('activeCount').textContent = active.length;
   $('activeList').innerHTML = active.length ? active.map((l) => cardHtml(l, isDup)).join('') : '<div class="empty">Nothing here yet. Open Leads and tap Move to Active on anyone worth following up.</div>';
   if (!rows.length) { $('leadList').innerHTML = `<div class="empty">${leads.length ? 'No leads match these filters.' : 'No leads yet. Website applications show up here automatically. Add anyone else with the form above.'}</div>`; return; }
