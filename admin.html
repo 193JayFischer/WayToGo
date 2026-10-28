@@ -352,7 +352,7 @@ const CLOSED = ['Hired', 'Not now', 'Too far', 'License denied'];
 // Stages used only on the Active tab, in order. Moving a lead to Active puts them at the first one.
 const ACTIVE_STAGES = ['Interview / application', 'Fingerprint', 'Training', 'Road test'];
 const LABELS = { type: 'Type', source: 'Source', fullName: 'Full name', organization: 'Organization', phone: 'Phone', email: 'Email', city: 'Town', zip: 'ZIP', within40: 'Within 40 min of Lakewood / Toms River', over21: 'At least 21', hasCdl: 'Holds CDL', cdlClass: 'CDL class', cdlState: 'License state', endorsements: 'Endorsements', cleanRecord: 'Clean driving record', recordExplain: 'Driving record explanation', experienceYears: 'School bus experience', lastEmployer: 'Most recent employer', otherExperience: 'Other passenger experience', positionType: 'Position wanted', startDate: 'Earliest start', reliableTransport: 'Reliable transportation', canPass: 'Able to pass', hearAbout: 'Heard about us', referral: 'Referred by', notes: 'Their message', consent: 'Consent', submittedFrom: 'Submitted from', license: 'License', next: 'Follow up on', adminNotes: 'Your notes', status: 'Stage' };
-const HIDDEN = new Set(['indeedId', 'notes', 'city', 'tracked', 'id', 'createdAt', 'updatedAt', 'status', 'next', 'adminNotes', 'license', 'source', 'type', 'fullName', 'phone', 'email', 'submittedFrom']);
+const HIDDEN = new Set(['indeedId', 'notes', 'city', 'tracked', 'trackedAt', 'id', 'createdAt', 'updatedAt', 'status', 'next', 'adminNotes', 'license', 'source', 'type', 'fullName', 'phone', 'email', 'submittedFrom']);
 const opts = (arr, sel) => arr.map((v) => `<option ${v === sel ? 'selected' : ''}>${esc(v)}</option>`).join('');
 $('l_source').innerHTML = opts(SOURCES, 'Facebook post'); $('l_cdl').innerHTML = opts(CDLS); $('l_stage').innerHTML = opts(STAGES, 'New');
 $('f_stage').insertAdjacentHTML('beforeend', opts(STAGES.concat(ACTIVE_STAGES))); $('f_source').insertAdjacentHTML('beforeend', opts(SOURCES));
@@ -773,7 +773,7 @@ function renderLeadsNow() {
   const isDup = (l) => (seen['n' + norm(l.fullName)] > 1) || (norm(l.phone) && seen['p' + norm(l.phone)] > 1) || (norm(l.email) && seen['e' + norm(l.email)] > 1);
   let rows = leads.filter((l) => (!ft || (l.type || 'Lead') === ft) && (!fs_ || (l.status || 'New') === fs_) && (!fsrc || l.source === fsrc) && (!q || [l.fullName, l.phone, l.email, l.city, l.organization, l.notes, l.adminNotes, l.source].join(' ').toLowerCase().includes(q)));
   rows.sort((a, b) => { if (sort === 'name') return (a.fullName || '').localeCompare(b.fullName || ''); if (sort === 'created') return (b.createdAt || '').localeCompare(a.createdAt || ''); const ad = CLOSED.includes(a.status), bd = CLOSED.includes(b.status); if (ad !== bd) return ad ? 1 : -1; return (a.next || '9999').localeCompare(b.next || '9999') || (b.createdAt || '').localeCompare(a.createdAt || ''); });
-  const active = leads.filter((l) => l.tracked).sort((a, b) => (a.next || '9999').localeCompare(b.next || '9999') || (b.createdAt || '').localeCompare(a.createdAt || ''));
+  const addedAt = (l) => l.trackedAt || tsIso(l.updatedAt) || tsIso(l.createdAt) || ''; const active = leads.filter((l) => l.tracked).sort((a, b) => addedAt(a).localeCompare(addedAt(b)));
   $('activeCount').textContent = active.length;
   $('activeList').innerHTML = active.length ? active.map((l) => cardHtml(l, isDup)).join('') : '<div class="empty">Nothing here yet. Open Leads and tap Move to Active on anyone worth following up.</div>';
   if (!rows.length) { $('leadList').innerHTML = `<div class="empty">${leads.length ? 'No leads match these filters.' : 'No leads yet. Website applications show up here automatically. Add anyone else with the form above.'}</div>`; return; }
@@ -807,13 +807,14 @@ function cardHtml(l, isDup) {
       </div></div>`; }
 }
 ['f_q', 'f_type', 'f_stage', 'f_source', 'f_sort'].forEach((id) => $(id).addEventListener('input', renderLeads));
+const tsIso = (v) => !v ? '' : typeof v === 'string' ? v : typeof v.toDate === 'function' ? v.toDate().toISOString() : v.seconds ? new Date(v.seconds * 1000).toISOString() : '';
 async function patchLead(id, patch) { try { await fs.updateDoc(docRef(id), { ...patch, updatedAt: fs.serverTimestamp() }); toast('Saved'); } catch (e) { toast('Could not save. ' + friendlyError(e)); } }
 [$('leadList'), $('activeList')].forEach((list) => {
 list.addEventListener('change', (e) => { const id = e.target.dataset.stage; if (!id) return; const patch = { status: e.target.value }; if (e.target.value === 'Insurance pending') patch.next = addDays(1); patchLead(id, patch); });
 list.addEventListener('click', async (e) => {
   const b = e.target.closest('button'); if (!b) return; const d = b.dataset;
   if (d.open) { b.closest('.ld').classList.toggle('open'); return; }
-  if (d.track) { const l = leads.find((x) => x.id === d.track) || {}; const toActive = !l.tracked; const patch = { tracked: toActive }; if (toActive && !ACTIVE_STAGES.includes(l.status)) { patch.status = ACTIVE_STAGES[0]; if (!l.next) patch.next = addDays(1); } if (!toActive && ACTIVE_STAGES.includes(l.status)) patch.status = 'Interested'; patchLead(d.track, patch); return; }
+  if (d.track) { const l = leads.find((x) => x.id === d.track) || {}; const toActive = !l.tracked; const patch = { tracked: toActive, trackedAt: toActive ? new Date().toISOString() : null }; if (toActive && !ACTIVE_STAGES.includes(l.status)) { patch.status = ACTIVE_STAGES[0]; if (!l.next) patch.next = addDays(1); } if (!toActive && ACTIVE_STAGES.includes(l.status)) patch.status = 'Interested'; patchLead(d.track, patch); return; }
   if (d.save) { const card = b.closest('.ld'); const patch = {}; card.querySelectorAll('[data-f]').forEach((el) => { patch[el.dataset.f] = el.value.trim(); }); if ('indeedId' in patch) patch.indeedId = indeedIdFrom(patch.indeedId); patchLead(d.save, patch); return; }
   if (d.copydm) { const l = leads.find((x) => x.id === d.copydm); const tpl = ($('tpl_follow') ? $('tpl_follow').value : TPLS().find((t) => t.k === 'follow').text).replace('[NAME]', (l.fullName || '').split(' ')[0] || 'there'); copyText(tpl); return; }
   if (d.del) { b.closest('.ld').querySelector(`[data-confirm="${d.del}"]`).classList.add('on'); return; }
