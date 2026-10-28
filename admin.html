@@ -350,12 +350,12 @@ const CDLS = ['Unknown', 'No CDL, willing to train', 'Has CDL, needs P/S', 'Has 
 const STAGES = ['New', 'Contacted', 'Interested', 'Interview set', 'Paperwork / training', 'Insurance pending', 'Hired', 'Not now', 'Too far', 'License denied'];
 const CLOSED = ['Hired', 'Not now', 'Too far', 'License denied'];
 // Stages used only on the Active tab, in order. Moving a lead to Active puts them at the first one.
-const ACTIVE_STAGES = ['Interview / application', 'Fingerprint', 'Training', 'Road test'];
+const ACTIVE_STAGES = ['Insurance pending', 'Interview / application', 'Fingerprint', 'Training', 'Road test'];
 const LABELS = { type: 'Type', source: 'Source', fullName: 'Full name', organization: 'Organization', phone: 'Phone', email: 'Email', city: 'Town', zip: 'ZIP', within40: 'Within 40 min of Lakewood / Toms River', over21: 'At least 21', hasCdl: 'Holds CDL', cdlClass: 'CDL class', cdlState: 'License state', endorsements: 'Endorsements', cleanRecord: 'Clean driving record', recordExplain: 'Driving record explanation', experienceYears: 'School bus experience', lastEmployer: 'Most recent employer', otherExperience: 'Other passenger experience', positionType: 'Position wanted', startDate: 'Earliest start', reliableTransport: 'Reliable transportation', canPass: 'Able to pass', hearAbout: 'Heard about us', referral: 'Referred by', notes: 'Their message', consent: 'Consent', submittedFrom: 'Submitted from', license: 'License', next: 'Follow up on', adminNotes: 'Your notes', status: 'Stage' };
 const HIDDEN = new Set(['indeedId', 'notes', 'city', 'tracked', 'trackedAt', 'id', 'createdAt', 'updatedAt', 'status', 'next', 'adminNotes', 'license', 'source', 'type', 'fullName', 'phone', 'email', 'submittedFrom']);
 const opts = (arr, sel) => arr.map((v) => `<option ${v === sel ? 'selected' : ''}>${esc(v)}</option>`).join('');
 $('l_source').innerHTML = opts(SOURCES, 'Facebook post'); $('l_cdl').innerHTML = opts(CDLS); $('l_stage').innerHTML = opts(STAGES, 'New');
-$('f_stage').insertAdjacentHTML('beforeend', opts(STAGES.concat(ACTIVE_STAGES))); $('f_source').insertAdjacentHTML('beforeend', opts(SOURCES));
+$('f_stage').insertAdjacentHTML('beforeend', opts(STAGES.concat(ACTIVE_STAGES.filter((x) => !STAGES.includes(x))))); $('f_source').insertAdjacentHTML('beforeend', opts(SOURCES));
 $('l_next').value = addDays(2);
 
 /* ---------- company details ---------- */
@@ -814,7 +814,7 @@ list.addEventListener('change', (e) => { const id = e.target.dataset.stage; if (
 list.addEventListener('click', async (e) => {
   const b = e.target.closest('button'); if (!b) return; const d = b.dataset;
   if (d.open) { b.closest('.ld').classList.toggle('open'); return; }
-  if (d.track) { const l = leads.find((x) => x.id === d.track) || {}; const toActive = !l.tracked; const patch = { tracked: toActive, trackedAt: toActive ? new Date().toISOString() : null }; if (toActive && !ACTIVE_STAGES.includes(l.status)) { patch.status = ACTIVE_STAGES[0]; if (!l.next) patch.next = addDays(1); } if (!toActive && ACTIVE_STAGES.includes(l.status)) patch.status = 'Interested'; patchLead(d.track, patch); return; }
+  if (d.track) { const l = leads.find((x) => x.id === d.track) || {}; const toActive = !l.tracked; const patch = { tracked: toActive, trackedAt: toActive ? new Date().toISOString() : null }; if (toActive) { patch.status = ACTIVE_STAGES[0]; patch.next = addDays(1); } if (!toActive && ACTIVE_STAGES.includes(l.status) && !STAGES.includes(l.status)) patch.status = 'Interested'; patchLead(d.track, patch); return; }
   if (d.save) { const card = b.closest('.ld'); const patch = {}; card.querySelectorAll('[data-f]').forEach((el) => { patch[el.dataset.f] = el.value.trim(); }); if ('indeedId' in patch) patch.indeedId = indeedIdFrom(patch.indeedId); patchLead(d.save, patch); return; }
   if (d.copydm) { const l = leads.find((x) => x.id === d.copydm); const tpl = ($('tpl_follow') ? $('tpl_follow').value : TPLS().find((t) => t.k === 'follow').text).replace('[NAME]', (l.fullName || '').split(' ')[0] || 'there'); copyText(tpl); return; }
   if (d.del) { b.closest('.ld').querySelector(`[data-confirm="${d.del}"]`).classList.add('on'); return; }
