@@ -30,6 +30,7 @@
     .rowx { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
     .btn.sm { padding: 8px 14px; font-size: .9rem; }
     .btn.danger { background: transparent; color: var(--red); border: 2px solid var(--red); box-shadow: none; }
+    .btn.green { background: var(--green); color: #fff; border-color: var(--green); }
     .btn.outline.sm { border-width: 1.5px; }
     .login { max-width: 440px; margin: 60px auto; }
     .login h1 { font-size: 1.6rem; }
@@ -789,7 +790,7 @@ function cardHtml(l, isDup) {
       ${locLine(l)}
       ${l.phone ? `<div class="tel">📞 <a href="tel:${esc(l.phone)}">${esc(l.phone)}</a> <a class="btn sm" href="${smsLink(l)}">Text</a> <a class="btn outline sm" href="${leadWaLink(l)}" target="_blank" rel="noopener">WhatsApp</a></div>` : `<div class="tel none">📞 No phone${l.source === 'Indeed' ? ' (see Indeed)' : ''}</div>`}
       <div class="meta"><span class="chip type ${type === 'Service inquiry' ? 'inq' : type === 'Lead' ? 'lead' : ''}">${esc(type)}</span><span class="chip">${esc(l.source || 'Website')}</span>${isDup(l) ? '<span class="chip dup">Possible duplicate</span>' : ''}${lic ? `<span class="chip">${esc(lic)}</span>` : ''}${l.organization ? `<span>${esc(l.organization)}</span>` : ''}<span>${fmt(l.createdAt)}</span>${l.next ? `<span>Follow up ${esc(l.next)}${l.next <= t && !closed ? ' (due)' : ''}</span>` : ''}</div></div>
-      <div class="ctl"><select data-stage="${l.id}">${opts(l.tracked ? ACTIVE_STAGES : STAGES, l.status || (l.tracked ? ACTIVE_STAGES[0] : 'New'))}</select><button class="btn outline sm" data-open="${l.id}" type="button">Details</button><button class="btn ${l.tracked ? 'outline' : 'blue'} sm" data-track="${l.id}" type="button">${l.tracked ? 'Remove from Active' : 'Move to Active'}</button>${l.indeedId ? `<a class="btn sm" href="https://account.indeed.com/o/myaccess/switch/confirm?employerId=1fb47a09cf9a8c0a7b43cc05a95deb64&continue=https%3A%2F%2Femployers.indeed.com%2Fcandidates%2Fview%3Fid%3D${esc(l.indeedId)}" target="_blank" rel="noopener">Open in Indeed</a>` : l.source === 'Indeed' ? `<a class="btn sm" href="https://employers.indeed.com/candidates?id=dc4de1264186&statusName=All" target="_blank" rel="noopener">Find in Indeed</a>` : ''}</div>
+      <div class="ctl"><select data-stage="${l.id}">${opts(l.tracked ? ACTIVE_STAGES : STAGES, l.status || (l.tracked ? ACTIVE_STAGES[0] : 'New'))}</select><button class="btn outline sm" data-open="${l.id}" type="button">Details</button><button class="btn ${l.tracked ? 'green' : 'blue'} sm" data-track="${l.id}" type="button">${l.tracked ? 'Remove from Active' : 'Move to Active'}</button>${l.indeedId ? `<a class="btn sm" href="https://account.indeed.com/o/myaccess/switch/confirm?employerId=1fb47a09cf9a8c0a7b43cc05a95deb64&continue=https%3A%2F%2Femployers.indeed.com%2Fcandidates%2Fview%3Fid%3D${esc(l.indeedId)}" target="_blank" rel="noopener">Open in Indeed</a>` : l.source === 'Indeed' ? `<a class="btn sm" href="https://employers.indeed.com/candidates?id=dc4de1264186&statusName=All" target="_blank" rel="noopener">Find in Indeed</a>` : ''}</div>
       ${cleanNotes(l) ? `<div class="notes">${linkify(cleanNotes(l))}</div>` : ''}
       <div class="more">
         ${extra ? `<div class="kv">${extra}</div>` : ''}
