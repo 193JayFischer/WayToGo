@@ -767,8 +767,8 @@ function renderLeadsNow() {
   const q = $('f_q').value.trim().toLowerCase(), ft = $('f_type').value, fs_ = $('f_stage').value, fsrc = $('f_source').value, sort = $('f_sort').value;
   const t = today(), wk = weekStart();
   const open = leads.filter((l) => !CLOSED.includes(l.status));
-  $('leadCount').textContent = open.length;
-  $('stats').innerHTML = [['Open leads', open.length], ['Due today', open.filter((l) => l.next && l.next <= t).length], ['New this week', leads.filter((l) => (l.createdAt || '').slice(0, 10) >= wk).length], ['Inquiries', leads.filter((l) => l.type === 'Service inquiry').length], ['In training', leads.filter((l) => l.status === 'Paperwork / training' || l.status === 'Training').length], ['Hired', leads.filter((l) => l.status === 'Hired').length]].map(([k, v]) => `<div class="stat"><b>${v}</b><span>${k}</span></div>`).join('');
+  $('leadCount').textContent = open.filter((l) => !l.tracked).length;
+  $('stats').innerHTML = [['Open leads', open.filter((l) => !l.tracked).length], ['Active', open.filter((l) => l.tracked).length], ['Due today', open.filter((l) => l.next && l.next <= t).length], ['New this week', leads.filter((l) => (l.createdAt || '').slice(0, 10) >= wk).length], ['Inquiries', leads.filter((l) => l.type === 'Service inquiry').length], ['In training', leads.filter((l) => l.status === 'Paperwork / training' || l.status === 'Training').length], ['Hired', leads.filter((l) => l.status === 'Hired').length]].map(([k, v]) => `<div class="stat"><b>${v}</b><span>${k}</span></div>`).join('');
   const seen = {}; const norm = (v) => String(v || '').toLowerCase().replace(/[^a-z0-9]/g, '');
   leads.forEach((l) => { const n = norm(l.fullName), p = norm(l.phone), e = norm(l.email); if (n) seen['n' + n] = (seen['n' + n] || 0) + 1; if (p) seen['p' + p] = (seen['p' + p] || 0) + 1; if (e) seen['e' + e] = (seen['e' + e] || 0) + 1; });
   const isDup = (l) => (seen['n' + norm(l.fullName)] > 1) || (norm(l.phone) && seen['p' + norm(l.phone)] > 1) || (norm(l.email) && seen['e' + norm(l.email)] > 1);
