@@ -213,7 +213,7 @@
         <input id="f_q" placeholder="Search name, phone, email, town, notes">
         <select id="f_type"><option value="">All types</option><option>Driver application</option><option>Service inquiry</option><option>Lead</option></select>
         <select id="f_stage"><option value="">All stages</option></select>
-        <select id="f_job"><option value="">All jobs</option><option>Driver</option><option>Mechanic</option></select>
+        <select id="f_job"><option value="">All jobs</option><option>Driver</option><option>Fleet technician</option></select>
         <select id="f_source"><option value="">All sources</option></select>
         <select id="f_sort"><option value="created">Sort: newest first</option><option value="next">Sort: follow-up date</option><option value="name">Sort: name</option></select>
         <button class="btn outline sm" id="export" type="button">Download CSV</button>
@@ -356,7 +356,7 @@ const CLOSED = ['Hired', 'Not now', 'Too far', 'License denied'];
 // Stages used only on the Active tab, in order. Moving a lead to Active puts them at the first one.
 const ACTIVE_STAGES = ['Insurance pending', 'Interview / application', 'Fingerprint', 'Training', 'Road test'];
 const LABELS = { type: 'Type', source: 'Source', fullName: 'Full name', organization: 'Organization', phone: 'Phone', email: 'Email', city: 'Town', zip: 'ZIP', within40: 'Within 40 min of Lakewood / Toms River', over21: 'At least 21', hasCdl: 'Holds CDL', cdlClass: 'CDL class', cdlState: 'License state', endorsements: 'Endorsements', cleanRecord: 'Clean driving record', recordExplain: 'Driving record explanation', experienceYears: 'School bus experience', lastEmployer: 'Most recent employer', otherExperience: 'Other passenger experience', positionType: 'Position wanted', startDate: 'Earliest start', reliableTransport: 'Reliable transportation', canPass: 'Able to pass', hearAbout: 'Heard about us', referral: 'Referred by', notes: 'Their message', consent: 'Consent', submittedFrom: 'Submitted from', license: 'License', next: 'Follow up on', adminNotes: 'Your notes', status: 'Stage' };
-const JOBS = ['Driver', 'Mechanic']; const jobOf = (l) => JOBS.includes(l.job) ? l.job : 'Driver';
+const JOBS = ['Driver', 'Fleet technician']; const jobOf = (l) => l.job === 'Mechanic' ? 'Fleet technician' : JOBS.includes(l.job) ? l.job : 'Driver';
 const HIDDEN = new Set(['indeedId', 'notes', 'city', 'tracked', 'trackedAt', 'job', 'id', 'createdAt', 'updatedAt', 'status', 'next', 'adminNotes', 'license', 'source', 'type', 'fullName', 'phone', 'email', 'submittedFrom']);
 const opts = (arr, sel) => arr.map((v) => `<option ${v === sel ? 'selected' : ''}>${esc(v)}</option>`).join('');
 $('l_source').innerHTML = opts(SOURCES, 'Facebook post'); $('l_cdl').innerHTML = opts(CDLS); $('l_stage').innerHTML = opts(STAGES, 'New');
@@ -694,8 +694,8 @@ const LEAD_FIX = {
   'indeed-vanessa-davalos': { status: 'Contacted', adminNotes: 'Not sure if she wants it.' }
 };
 const FILL_FIX = {
-  'indeed-2776b988f679': { job: 'Mechanic', phone: '732-688-3172', city: 'Brick, NJ', notes: 'Applied on Indeed for Entry Level School Bus Fleet Maintenance Technician / CDL Driver, Nov 2. Recent job: Director of Maintenance. Meets 0/7 qualifications.' },
-  'indeed-7716571f527a': { job: 'Mechanic', notes: 'Applied on Indeed for Entry Level School Bus Fleet Maintenance Technician / CDL Driver, Nov 2. Meets 0/7 qualifications. Phone and town are in Indeed.' }
+  'indeed-2776b988f679': { job: 'Fleet technician', phone: '732-688-3172', city: 'Brick, NJ', notes: 'Applied on Indeed for Entry Level School Bus Fleet Maintenance Technician / CDL Driver, Nov 2. Recent job: Director of Maintenance. Meets 0/7 qualifications.' },
+  'indeed-7716571f527a': { job: 'Fleet technician', notes: 'Applied on Indeed for Entry Level School Bus Fleet Maintenance Technician / CDL Driver, Nov 2. Meets 0/7 qualifications. Phone and town are in Indeed.' }
 };
 let fixRan = false;
 function indeedIdFrom(v) { const t = String(v || '').trim(); const m = t.match(/(?:\?|&|%3F|%26)id(?:=|%3D)([0-9a-f]{8,})/i) || t.match(/^([0-9a-f]{10,})$/i); const id = m ? m[1].toLowerCase() : ''; return id === 'dc4de1264186' ? '' : id; }
@@ -798,7 +798,7 @@ function cardHtml(l, isDup) {
       <div><div class="who">${esc(l.fullName || '(no name)')}</div>
       ${locLine(l)}
       ${l.phone ? `<div class="tel">📞 <a href="tel:${esc(l.phone)}">${esc(l.phone)}</a> <a class="btn sm" href="${smsLink(l)}">Text</a> <a class="btn outline sm" href="${leadWaLink(l)}" target="_blank" rel="noopener">WhatsApp</a></div>` : `<div class="tel none">📞 No phone${l.source === 'Indeed' ? ' (see Indeed)' : ''}</div>`}
-      <div class="meta"><span class="chip ${jobOf(l) === 'Mechanic' ? 'mech' : 'drv'}">${jobOf(l)}</span><span class="chip type ${type === 'Service inquiry' ? 'inq' : type === 'Lead' ? 'lead' : ''}">${esc(type)}</span><span class="chip">${esc(l.source || 'Website')}</span>${isDup(l) ? '<span class="chip dup">Possible duplicate</span>' : ''}${lic ? `<span class="chip">${esc(lic)}</span>` : ''}${l.organization ? `<span>${esc(l.organization)}</span>` : ''}<span>${fmt(l.createdAt)}</span>${l.next ? `<span>Follow up ${esc(l.next)}${l.next <= t && !closed ? ' (due)' : ''}</span>` : ''}</div></div>
+      <div class="meta"><span class="chip ${jobOf(l) === 'Fleet technician' ? 'mech' : 'drv'}">${jobOf(l)}</span><span class="chip type ${type === 'Service inquiry' ? 'inq' : type === 'Lead' ? 'lead' : ''}">${esc(type)}</span><span class="chip">${esc(l.source || 'Website')}</span>${isDup(l) ? '<span class="chip dup">Possible duplicate</span>' : ''}${lic ? `<span class="chip">${esc(lic)}</span>` : ''}${l.organization ? `<span>${esc(l.organization)}</span>` : ''}<span>${fmt(l.createdAt)}</span>${l.next ? `<span>Follow up ${esc(l.next)}${l.next <= t && !closed ? ' (due)' : ''}</span>` : ''}</div></div>
       <div class="ctl"><select data-stage="${l.id}">${opts(l.tracked ? ACTIVE_STAGES : STAGES, l.status || (l.tracked ? ACTIVE_STAGES[0] : 'New'))}</select><button class="btn outline sm" data-open="${l.id}" type="button">Details</button><button class="btn ${l.tracked ? 'green' : 'blue'} sm" data-track="${l.id}" type="button">${l.tracked ? 'Back to Leads' : 'Move to Active'}</button>${l.indeedId ? `<a class="btn outline sm" href="https://account.indeed.com/o/myaccess/switch/confirm?employerId=1fb47a09cf9a8c0a7b43cc05a95deb64&continue=https%3A%2F%2Femployers.indeed.com%2Fcandidates%2Fview%3Fid%3D${esc(l.indeedId)}" target="_blank" rel="noopener">Open in Indeed</a>` : l.source === 'Indeed' ? `<a class="btn outline sm" href="https://employers.indeed.com/candidates?id=dc4de1264186&statusName=All" target="_blank" rel="noopener">Find in Indeed</a>` : ''}</div>
       ${cleanNotes(l) ? `<div class="notes">${linkify(cleanNotes(l))}</div>` : ''}
       <div class="more">
