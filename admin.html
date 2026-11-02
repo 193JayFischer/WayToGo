@@ -693,6 +693,10 @@ const LEAD_FIX = {
   'indeed-8cb6434c16d5': { status: 'Contacted', adminNotes: 'Possibly currently working a job.' },
   'indeed-vanessa-davalos': { status: 'Contacted', adminNotes: 'Not sure if she wants it.' }
 };
+const FILL_FIX = {
+  'indeed-2776b988f679': { job: 'Mechanic', phone: '732-688-3172', city: 'Brick, NJ', notes: 'Applied on Indeed for Entry Level School Bus Fleet Maintenance Technician / CDL Driver, Nov 2. Recent job: Director of Maintenance. Meets 0/7 qualifications.' },
+  'indeed-7716571f527a': { job: 'Mechanic', notes: 'Applied on Indeed for Entry Level School Bus Fleet Maintenance Technician / CDL Driver, Nov 2. Meets 0/7 qualifications. Phone and town are in Indeed.' }
+};
 let fixRan = false;
 function indeedIdFrom(v) { const t = String(v || '').trim(); const m = t.match(/(?:\?|&|%3F|%26)id(?:=|%3D)([0-9a-f]{8,})/i) || t.match(/^([0-9a-f]{10,})$/i); const id = m ? m[1].toLowerCase() : ''; return id === 'dc4de1264186' ? '' : id; }
 async function applyIndeedFix() {
@@ -700,6 +704,7 @@ async function applyIndeedFix() {
   for (const l of leads) {
     const patch = {}; const hex = INDEED_FIX[l.id]; if (hex && !l.indeedId) patch.indeedId = hex;
     const city = CITY_FIX[l.id]; if (city && !l.city) patch.city = city;
+    const ff = FILL_FIX[l.id]; if (ff) { if (ff.job && l.job !== ff.job) patch.job = ff.job; if (ff.phone && !l.phone) patch.phone = ff.phone; if (ff.city && !l.city) patch.city = ff.city; if (ff.notes && !/Recent job|Phone and town/.test(l.notes || '')) patch.notes = ff.notes; }
     const fx = LEAD_FIX[l.id]; if (fx) { if (fx.status && (!l.status || l.status === 'New')) patch.status = fx.status; if (fx.adminNotes && !l.adminNotes) patch.adminNotes = fx.adminNotes; }
     if (Object.keys(patch).length) { try { await fs.updateDoc(docRef(l.id), { ...patch, updatedAt: fs.serverTimestamp() }); } catch (e) { /* not admin or offline; try again next load */ fixRan = false; } }
   }
