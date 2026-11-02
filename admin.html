@@ -51,7 +51,8 @@
     .filters input, .filters select { width: auto; flex: 1 1 150px; padding: 10px 12px; }
     .leads { display: flex; flex-direction: column; gap: 10px; }
     .ld { display: grid; grid-template-columns: 1fr auto; gap: 8px 12px; border: 1px solid var(--line); border-left: 5px solid var(--line); border-radius: 10px; padding: 12px 14px; background: #fff; align-items: start; }
-    .ld.due { border-left-color: #e08a00; }
+    .ld.due { border-left-color: #7c3aed; }
+    .ld.late { border-left-color: #e08a00; }
     .ld.hot { border-left-color: var(--green); }
     .ld.new { border-left-color: var(--blue); }
     .ld.cold { opacity: .6; }
@@ -182,7 +183,7 @@
     <div class="panel">
       <span class="eyebrow">Every driver and every inquiry, in one place</span>
       <h2>Leads</h2>
-      <p class="note">Website applications and service inquiries land here on their own. Add anyone else who shows interest anywhere: a comment, a DM, a call, a referral. Set a follow-up date on each one. Orange means follow-up is due.</p>
+      <p class="note">Website applications and service inquiries land here on their own. Add anyone else who shows interest anywhere: a comment, a DM, a call, a referral. Set a follow-up date on each one. Blue = new or waiting for the follow-up date. Purple = follow up today. Orange = overdue. Faded = closed.</p>
       <div class="stats" id="stats"></div>
       <div id="leads-error" class="notice err" style="display:none"></div>
     </div>
@@ -227,7 +228,7 @@
     <div class="panel">
       <span class="eyebrow">The ones worth chasing</span>
       <h2>Active</h2>
-      <p class="note">Leads you moved here with the <b>Move to Active</b> button. Sorted by follow-up date, soonest first. Orange means the follow-up is due. Use <b>Remove from Active</b> on a card to send it back to the main list.</p>
+      <p class="note">Leads you moved here with the <b>Move to Active</b> button. Newest at the top. Green = in process. Purple = follow up today. Orange = overdue. Use <b>Back to Leads</b> on a card to send it back to the main list.</p>
       <div class="leads" id="activeList"><div class="empty">Nothing here yet. Open Leads and tap Move to Active on anyone worth following up.</div></div>
     </div>
   </section>
@@ -760,7 +761,7 @@ $('login-form').addEventListener('submit', async (ev) => {
 $('logout').addEventListener('click', () => authLib.signOut(auth));
 
 /* ---------- leads ---------- */
-function stageClass(l) { if (CLOSED.includes(l.status)) return 'cold'; if (l.next && l.next <= today()) return 'due'; if (['Interested', 'Interview set', 'Paperwork / training', 'Insurance pending'].concat(ACTIVE_STAGES).includes(l.status)) return 'hot'; if (l.status === 'New' || !l.status) return 'new'; return ''; }
+function stageClass(l) { if (CLOSED.includes(l.status)) return 'cold'; const t = today(); if (l.next && l.next === t) return 'due'; if (l.next && l.next < t) return 'late'; if (l.tracked) return 'hot'; if (l.next || l.status === 'New' || !l.status) return 'new'; return ''; }
 function licenseOf(l) { if (l.license) return l.license; if (l.hasCdl) { if (/^yes/i.test(l.hasCdl)) { const e = (l.endorsements || []).join(' '); return /P/.test(e) && /S/.test(e) ? 'Has CDL with P & S' : 'Has CDL, needs P/S'; } return 'No CDL, willing to train'; } return ''; }
 let renderPending = false;
 function renderLeads() {
