@@ -631,7 +631,7 @@ function townKey(l) {
   let c = String(l.city || '').trim(); const z = String(l.zip || '').trim().slice(0, 5);
   if (!c && /^\d{5}$/.test(z)) return ZIPS[z] || ('zip ' + z);
   if (!c) return '';
-  c = c.toLowerCase().replace(/[.,]/g, ' ').replace(/\s+/g, ' ').trim();
+  c = c.toLowerCase().replace(/['\u2018\u2019`]/g, '').replace(/[.,]/g, ' ').replace(/\s+/g, ' ').trim();
   c = c.replace(/^(township of|twp of|town of|city of|borough of|boro of)\s+/, '').replace(/\s+(township|twp|boro|borough|city|nj|new jersey|pa|ny)$/g, '').replace(/\s+(township|twp|boro|borough)$/g, '').replace(/\s+(nj|new jersey)$/g, '').trim();
   if (c.startsWith('toms river')) c = 'toms river';
   return c;
@@ -648,7 +648,7 @@ async function geocode(key) {
   if (TOWNS[key]) return TOWNS[key];
   const q = key.startsWith('zip ') ? `postalcode=${encodeURIComponent(key.slice(4))}&country=us` : `q=${encodeURIComponent(key + ', New Jersey, USA')}`;
   const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&${q}`); if (!r.ok) throw new Error('geocode');
-  const j = await r.json(); if (!j[0]) throw new Error('notfound'); return [parseFloat(j[0].lat), parseFloat(j[0].lon)];
+  const j = await r.json(); if (!j[0]) throw new Error('notfound'); if (!key.startsWith('zip ') && !/New Jersey/i.test(j[0].display_name || '')) throw new Error('notnj'); return [parseFloat(j[0].lat), parseFloat(j[0].lon)];
 }
 function geoFor(l) { const k = townKey(l); if (!k || k === 'yard') return null; const g = geoState.cache[k]; if (g) return g; if (!geoState.pending.has(k)) { geoState.pending.add(k); geoState.queue.push(k); runGeoQueue(); } return undefined; }
 async function fixYard() {
