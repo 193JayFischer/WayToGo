@@ -229,6 +229,7 @@
       <span class="eyebrow">The ones worth chasing</span>
       <h2>Active</h2>
       <p class="note">Leads you moved here with the <b>Move to Active</b> button. Newest at the top. Green = in process. Purple = follow up today. Orange = overdue. Use <b>Back to Leads</b> on a card to send it back to the main list.</p>
+      <div class="filters"><input id="a_q" placeholder="Search name, phone, town, notes"></div>
       <div class="leads" id="activeList"><div class="empty">Nothing here yet. Open Leads and tap Move to Active on anyone worth following up.</div></div>
     </div>
   </section>
@@ -785,9 +786,9 @@ function renderLeadsNow() {
   const isDup = (l) => (seen['n' + norm(l.fullName)] > 1) || (norm(l.phone) && seen['p' + norm(l.phone)] > 1) || (norm(l.email) && seen['e' + norm(l.email)] > 1);
   let rows = leads.filter((l) => !l.tracked && (!fjob || jobOf(l) === fjob) && (!ft || (l.type || 'Lead') === ft) && (!fs_ || (l.status || 'New') === fs_) && (!fsrc || l.source === fsrc) && (!q || [l.fullName, l.phone, l.email, l.city, l.organization, l.notes, l.adminNotes, l.source].join(' ').toLowerCase().includes(q)));
   rows.sort((a, b) => { const ad = CLOSED.includes(a.status), bd = CLOSED.includes(b.status); if (ad !== bd) return ad ? 1 : -1; if (sort === 'name') return (a.fullName || '').localeCompare(b.fullName || ''); if (sort === 'created') return (b.createdAt || '').localeCompare(a.createdAt || ''); return (a.next || '9999').localeCompare(b.next || '9999') || (b.createdAt || '').localeCompare(a.createdAt || ''); });
-  const addedAt = (l) => l.trackedAt || tsIso(l.updatedAt) || tsIso(l.createdAt) || ''; const active = leads.filter((l) => l.tracked).sort((a, b) => addedAt(b).localeCompare(addedAt(a)));
-  $('activeCount').textContent = active.length;
-  $('activeList').innerHTML = active.length ? active.map((l) => cardHtml(l, isDup)).join('') : '<div class="empty">Nothing here yet. Open Leads and tap Move to Active on anyone worth following up.</div>';
+  const addedAt = (l) => l.trackedAt || tsIso(l.updatedAt) || tsIso(l.createdAt) || ''; const aq = $('a_q').value.trim().toLowerCase(); const active = leads.filter((l) => l.tracked && (!aq || [l.fullName, l.phone, l.email, l.city, l.notes, l.adminNotes, l.status].join(' ').toLowerCase().includes(aq))).sort((a, b) => addedAt(b).localeCompare(addedAt(a)));
+  $('activeCount').textContent = leads.filter((l) => l.tracked).length;
+  $('activeList').innerHTML = active.length ? active.map((l) => cardHtml(l, isDup)).join('') : `<div class="empty">${aq ? 'No one on Active matches that search.' : 'Nothing here yet. Open Leads and tap Move to Active on anyone worth following up.'}</div>`;
   if (!rows.length) { $('leadList').innerHTML = `<div class="empty">${leads.length ? 'No leads match these filters. People you moved to Active are on the Active tab.' : 'No leads yet. Website applications show up here automatically. Add anyone else with the form above.'}</div>`; return; }
   $('leadList').innerHTML = rows.map((l) => cardHtml(l, isDup)).join('');
 }
@@ -819,7 +820,7 @@ function cardHtml(l, isDup) {
         <span class="confirm" data-confirm="${l.id}">Delete ${esc(l.fullName || 'this lead')}? <button class="btn danger sm" data-delyes="${l.id}" type="button">Yes, delete</button><button class="btn outline sm" data-delno="${l.id}" type="button">Keep</button></span></div>
       </div></div>`; }
 }
-['f_q', 'f_type', 'f_stage', 'f_job', 'f_source', 'f_sort'].forEach((id) => $(id).addEventListener('input', renderLeads));
+['f_q', 'f_type', 'f_stage', 'f_job', 'f_source', 'f_sort', 'a_q'].forEach((id) => $(id).addEventListener('input', renderLeads));
 const tsIso = (v) => !v ? '' : typeof v === 'string' ? v : typeof v.toDate === 'function' ? v.toDate().toISOString() : v.seconds ? new Date(v.seconds * 1000).toISOString() : '';
 async function patchLead(id, patch) { try { await fs.updateDoc(docRef(id), { ...patch, updatedAt: fs.serverTimestamp() }); toast('Saved'); } catch (e) { toast('Could not save. ' + friendlyError(e)); } }
 [$('leadList'), $('activeList')].forEach((list) => {
