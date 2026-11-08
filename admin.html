@@ -338,10 +338,11 @@ const cleanNotes = (l) => String(l.notes || '').replace(/\s*(Open in Indeed|Find
 const linkify = (s) => esc(s).replace(/https?:\/\/[^\s<]+/g, (u) => { const label = /indeed\.com/i.test(u) ? 'Open in Indeed' : /waytogonj\.com/i.test(u) ? 'waytogonj.com' : 'Open link'; return `<a href="${u}" target="_blank" rel="noopener">${label}</a>`; });
 const toast = (m) => { const t = $('toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('on'), 1600); };
 const copyText = async (text) => { try { await navigator.clipboard.writeText(text); toast('Copied'); } catch (e) { const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); toast('Copied'); } catch (_) { toast('Select the text and copy it manually'); } ta.remove(); } };
-const today = () => new Date().toISOString().slice(0, 10);
+const ymd = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const today = () => ymd(new Date());
 // Sunday that starts the current week, as YYYY-MM-DD in local time.
 const weekStart = () => { const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - d.getDay()); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
-const addDays = (n) => { const d = new Date(); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); };
+const addDays = (n) => { const d = new Date(); d.setDate(d.getDate() + n); return ymd(d); };
 const SITE = location.origin + location.pathname.replace(/[^/]*$/, '');
 const APPLY_URL = SITE + 'apply.html';
 
@@ -585,7 +586,7 @@ async function copyImage(url) {
   catch (e) { window.open(url, '_blank'); toast('Opened the image. Press and hold to save it.'); }
 }
 let routine = { week: '', done: {} };
-function weekKey() { const d = new Date(); const day = (d.getDay() + 6) % 7; const mon = new Date(d); mon.setDate(d.getDate() - day); mon.setHours(0,0,0,0); return mon.toISOString().slice(0, 10); }
+function weekKey() { const d = new Date(); const day = (d.getDay() + 6) % 7; const mon = new Date(d); mon.setDate(d.getDate() - day); mon.setHours(0,0,0,0); return ymd(mon); }
 function weekDates() { const mon = new Date(weekKey() + 'T00:00:00'); return Array.from({ length: 7 }, (_, i) => { const x = new Date(mon); x.setDate(mon.getDate() + i); return x; }); }
 function renderRoutine() {
   if (routine.week !== weekKey()) routine = { week: weekKey(), done: {} };
