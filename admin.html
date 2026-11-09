@@ -55,6 +55,7 @@
     .ld.late { border-left-color: #e08a00; }
     .ld.hot { border-left-color: var(--green); }
     .ld.new { border-left-color: var(--blue); }
+    .ld.fresh { border-left-color: var(--yellow); }
     .ld.cold { opacity: .6; }
     .ld .who { font-weight: 700; font-size: 1.05rem; }
     .ld .who small { font-weight: 500; color: var(--muted); margin-left: 8px; }
@@ -152,7 +153,7 @@
 <header class="topbar">
   <div class="wrap">
     <a class="logo" href="index.html"><img class="mark" src="img/bus.png" alt="" width="172" height="123"><span class="word">WAY<em>To</em>GO</span><span class="title">Recruiting hub</span></a>
-    <span id="hubver" title="Hub version" style="font-size:.75rem;color:#888;align-self:center">v11.09a</span>
+    <span id="hubver" title="Hub version" style="font-size:.75rem;color:#888;align-self:center">v11.09b</span>
     <button class="btn outline" id="logout" style="display:none">Log out</button>
     <nav class="tabs" id="tabs" role="tablist" style="display:none">
       <button role="tab" data-tab="leads" aria-selected="true">Leads<span class="n" id="leadCount">0</span></button>
@@ -184,7 +185,7 @@
     <div class="panel">
       <span class="eyebrow">Every driver and every inquiry, in one place</span>
       <h2>Leads</h2>
-      <p class="note">Website applications and service inquiries land here on their own. Add anyone else who shows interest anywhere: a comment, a DM, a call, a referral. Set a follow-up date on each one. Blue = new or waiting for the follow-up date. Purple = follow up today. Orange = overdue. Faded = closed.</p>
+      <p class="note">Website applications and service inquiries land here on their own. Add anyone else who shows interest anywhere: a comment, a DM, a call, a referral. Set a follow-up date on each one. Yellow = new, not touched yet. Blue = waiting for the follow-up date. Purple = follow up today. Orange = overdue. Faded = closed.</p>
       <div class="stats" id="stats"></div>
       <div id="leads-error" class="notice err" style="display:none"></div>
     </div>
@@ -764,7 +765,7 @@ $('login-form').addEventListener('submit', async (ev) => {
 $('logout').addEventListener('click', () => authLib.signOut(auth));
 
 /* ---------- leads ---------- */
-function stageClass(l) { if (CLOSED.includes(l.status)) return 'cold'; const t = today(); if (l.next && l.next === t) return 'due'; if (l.next && l.next < t) return 'late'; if (l.tracked) return 'hot'; if (l.next || l.status === 'New' || !l.status) return 'new'; return ''; }
+function stageClass(l) { if (CLOSED.includes(l.status)) return 'cold'; const t = today(); if (l.next && l.next === t) return 'due'; if (l.next && l.next < t) return 'late'; if (l.tracked) return 'hot'; if (l.status === 'New' || !l.status) return 'fresh'; if (l.next) return 'new'; return ''; }
 function licenseOf(l) { if (l.license) return l.license; if (l.hasCdl) { if (/^yes/i.test(l.hasCdl)) { const e = (l.endorsements || []).join(' '); return /P/.test(e) && /S/.test(e) ? 'Has CDL with P & S' : 'Has CDL, needs P/S'; } return 'No CDL, willing to train'; } return ''; }
 let renderPending = false;
 function renderLeads() {
