@@ -64,6 +64,7 @@
     .ld .loc .far { color: #b42318; }
     .ld .tel { font-size: 1rem; margin-top: 4px; font-weight: 600; }
     .ld .tel a { color: var(--blue); text-decoration: none; }
+    .ld .tel .num { user-select: all; -webkit-user-select: all; cursor: text; padding: 1px 4px; border-radius: 4px; background: #f4f6f8; }
     .ld .tel .btn { margin-left: 6px; padding: 4px 10px; font-size: .85rem; vertical-align: middle; }
     .ld .tel.none { color: var(--muted); font-weight: 500; }
     .ld .notes a, .ld .kv a { overflow-wrap: anywhere; word-break: break-word; }
@@ -153,7 +154,7 @@
 <header class="topbar">
   <div class="wrap">
     <a class="logo" href="index.html"><img class="mark" src="img/bus.png" alt="" width="172" height="123"><span class="word">WAY<em>To</em>GO</span><span class="title">Recruiting hub</span></a>
-    <span id="hubver" title="Hub version" style="font-size:.75rem;color:#888;align-self:center">v11.09b</span>
+    <span id="hubver" title="Hub version" style="font-size:.75rem;color:#888;align-self:center">v11.13a</span>
     <button class="btn outline" id="logout" style="display:none">Log out</button>
     <nav class="tabs" id="tabs" role="tablist" style="display:none">
       <button role="tab" data-tab="leads" aria-selected="true">Leads<span class="n" id="leadCount">0</span></button>
@@ -806,7 +807,7 @@ function cardHtml(l, isDup) {
     return `<div class="ld ${stageClass(l)}" data-id="${l.id}">
       <div><div class="who">${esc(l.fullName || '(no name)')}</div>
       ${locLine(l)}
-      ${l.phone ? `<div class="tel">📞 <a href="tel:${esc(l.phone)}">${esc(l.phone)}</a> <a class="btn sm" href="${smsLink(l)}">Text</a> <a class="btn outline sm" href="${leadWaLink(l)}" target="_blank" rel="noopener">WhatsApp</a></div>` : `<div class="tel none">📞 No phone${l.source === 'Indeed' ? ' (see Indeed)' : ''}</div>`}
+      ${l.phone ? `<div class="tel">📞 <span class="num" title="Click to select the number">${esc(l.phone)}</span> <button class="btn outline sm" data-copyphone="${esc(l.phone)}" type="button">Copy</button> <a class="btn outline sm" href="tel:${esc(l.phone)}">Call</a> <a class="btn sm" href="${smsLink(l)}">Text</a> <a class="btn outline sm" href="${leadWaLink(l)}" target="_blank" rel="noopener">WhatsApp</a></div>` : `<div class="tel none">📞 No phone${l.source === 'Indeed' ? ' (see Indeed)' : ''}</div>`}
       <div class="meta"><span class="chip ${jobOf(l) === 'Fleet technician' ? 'mech' : 'drv'}">${jobOf(l)}</span><span class="chip type ${type === 'Service inquiry' ? 'inq' : type === 'Lead' ? 'lead' : ''}">${esc(type)}</span><span class="chip">${esc(l.source || 'Website')}</span>${isDup(l) ? '<span class="chip dup">Possible duplicate</span>' : ''}${lic ? `<span class="chip">${esc(lic)}</span>` : ''}${l.organization ? `<span>${esc(l.organization)}</span>` : ''}<span>${fmt(l.createdAt)}</span>${l.next ? `<span>Follow up ${esc(l.next)}${l.next <= t && !closed ? ' (due)' : ''}</span>` : ''}</div></div>
       <div class="ctl"><select data-stage="${l.id}">${opts(l.tracked ? ACTIVE_STAGES : STAGES, l.status || (l.tracked ? ACTIVE_STAGES[0] : 'New'))}</select><button class="btn outline sm" data-open="${l.id}" type="button">Details</button><button class="btn ${l.tracked ? 'green' : 'blue'} sm" data-track="${l.id}" type="button">${l.tracked ? 'Back to Leads' : 'Move to Active'}</button>${l.indeedId ? `<a class="btn outline sm" href="https://account.indeed.com/o/myaccess/switch/confirm?employerId=1fb47a09cf9a8c0a7b43cc05a95deb64&continue=https%3A%2F%2Femployers.indeed.com%2Fcandidates%2Fview%3Fid%3D${esc(l.indeedId)}" target="_blank" rel="noopener">Open in Indeed</a>` : l.source === 'Indeed' ? `<a class="btn outline sm" href="https://employers.indeed.com/candidates?id=dc4de1264186&statusName=All" target="_blank" rel="noopener">Find in Indeed</a>` : ''}</div>
       ${cleanNotes(l) ? `<div class="notes">${linkify(cleanNotes(l))}</div>` : ''}
@@ -833,6 +834,7 @@ async function patchLead(id, patch) { try { await fs.updateDoc(docRef(id), { ...
 list.addEventListener('change', (e) => { const id = e.target.dataset.stage; if (!id) return; const patch = { status: e.target.value }; if (!CLOSED.includes(e.target.value)) patch.next = addDays(2); e.target.blur(); patchLead(id, patch); });
 list.addEventListener('click', async (e) => {
   const b = e.target.closest('button'); if (!b) return; const d = b.dataset;
+  if (d.copyphone) { copyText(d.copyphone); return; }
   if (d.open) { b.closest('.ld').classList.toggle('open'); if (renderPending) renderLeads(); return; }
   if (d.track) { const l = leads.find((x) => x.id === d.track) || {}; const toActive = !l.tracked; const patch = { tracked: toActive, trackedAt: toActive ? new Date().toISOString() : null }; if (toActive) { patch.status = ACTIVE_STAGES[0]; patch.next = addDays(2); } if (!toActive && ACTIVE_STAGES.includes(l.status) && !STAGES.includes(l.status)) patch.status = 'Interested'; patchLead(d.track, patch); return; }
   if (d.save) { const card = b.closest('.ld'); const patch = {}; card.querySelectorAll('[data-f]').forEach((el) => { patch[el.dataset.f] = el.value.trim(); }); if ('indeedId' in patch) patch.indeedId = indeedIdFrom(patch.indeedId); card.classList.remove('open'); await patchLead(d.save, patch); if (renderPending) renderLeads(); return; }
