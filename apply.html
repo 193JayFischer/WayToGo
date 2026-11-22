@@ -327,6 +327,7 @@ import { isConfigured, submitLead, friendlyError } from './site.js';
     data.source = 'Website';
     data.type = 'Driver application';
     data.submittedFrom = location.href;
+    try { var src = (new URLSearchParams(location.search).get('src') || '').toLowerCase().replace(/[^a-z0-9_-]/g, '').slice(0, 30); if (src) data.via = src; } catch (e) {}
     var btn = document.getElementById('submit-btn');
     btn.disabled = true;
     btn.textContent = 'Sending...';

@@ -57,6 +57,14 @@
     .ld.new { border-left-color: var(--blue); }
     .ld.fresh { border-left-color: var(--yellow); }
     .ld.cold { opacity: .6; }
+    .cmp { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: .95rem; }
+    .cmp th, .cmp td { text-align: right; padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+    .cmp th:first-child, .cmp td:first-child { text-align: left; font-weight: 700; white-space: normal; }
+    .cmp thead th { font-size: .8rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); white-space: normal; }
+    .cmp td small { color: var(--muted); font-weight: 500; }
+    .cmp .hl { background: #fff9d6; }
+    .cmpwrap { overflow-x: auto; }
+    .chip.via { background: #e8f7ee; color: #14532d; }
     .ld .who { font-weight: 700; font-size: 1.05rem; }
     .ld .who small { font-weight: 500; color: var(--muted); margin-left: 8px; }
     .ld .loc { font-size: .92rem; margin-top: 2px; color: #1a4d7a; font-weight: 600; }
@@ -154,11 +162,12 @@
 <header class="topbar">
   <div class="wrap">
     <a class="logo" href="index.html"><img class="mark" src="img/bus.png" alt="" width="172" height="123"><span class="word">WAY<em>To</em>GO</span><span class="title">Recruiting hub</span></a>
-    <span id="hubver" title="Hub version" style="font-size:.75rem;color:#888;align-self:center">v11.13c</span>
+    <span id="hubver" title="Hub version" style="font-size:.75rem;color:#888;align-self:center">v11.22a</span>
     <button class="btn outline" id="logout" style="display:none">Log out</button>
     <nav class="tabs" id="tabs" role="tablist" style="display:none">
       <button role="tab" data-tab="leads" aria-selected="true">Leads<span class="n" id="leadCount">0</span></button>
       <button role="tab" data-tab="active" aria-selected="false">Active<span class="n" id="activeCount">0</span></button>
+      <button role="tab" data-tab="web" aria-selected="false">Website<span class="n" id="webCount">0</span></button>
       <button role="tab" data-tab="posts" aria-selected="false">Posts</button>
       <button role="tab" data-tab="setup" aria-selected="false">Setup</button>
       <button role="tab" data-tab="routine" aria-selected="false">Routine</button>
@@ -223,6 +232,19 @@
         <button class="btn outline sm" id="export" type="button">Download CSV</button>
       </div>
       <div class="leads" id="leadList"><div class="empty">Loading...</div></div>
+    </div>
+  </section>
+
+  <!-- WEBSITE APPLICATIONS -->
+  <section class="view" id="view-web">
+    <div class="panel">
+      <span class="eyebrow">Quality check</span>
+      <h2>Website applications</h2>
+      <p class="note">Tracks everyone who filled out the full application on waytogonj.com, counted from the date below, next to the Indeed quick-apply numbers so you can see which brings better people. Set the date to the day you switched Indeed to send applicants to the website.</p>
+      <div class="filters"><label style="font-weight:700;align-self:center">Counting from</label><input type="date" id="w_since" style="flex:0 0 auto"></div>
+      <div id="webCompare"></div>
+      <h3 style="margin:18px 0 8px">Website applicants since that date</h3>
+      <div class="leads" id="webList"><div class="empty">No website applications yet since that date.</div></div>
     </div>
   </section>
 
@@ -351,7 +373,7 @@ const APPLY_URL = SITE + 'apply.html';
 
 /* ---------- tabs ---------- */
 const tabs = [...document.querySelectorAll('#tabs button')];
-function showTab(name) { tabs.forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === name))); ['leads', 'active', 'posts', 'setup', 'routine'].forEach((v) => $('view-' + v).classList.toggle('on', v === name)); try { localStorage.setItem('wtg.tab', name); } catch (e) {} }
+function showTab(name) { tabs.forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === name))); ['leads', 'active', 'web', 'posts', 'setup', 'routine'].forEach((v) => $('view-' + v).classList.toggle('on', v === name)); try { localStorage.setItem('wtg.tab', name); } catch (e) {} }
 tabs.forEach((b) => b.addEventListener('click', () => showTab(b.dataset.tab)));
 
 /* ---------- constants ---------- */
@@ -363,7 +385,7 @@ const CLOSED = ['Hired', 'Not now', 'Too far', 'Never reached', 'License denied'
 const ACTIVE_STAGES = ['Insurance pending', 'Interview / application', 'Fingerprint', 'Training', 'Road test'];
 const LABELS = { type: 'Type', source: 'Source', fullName: 'Full name', organization: 'Organization', phone: 'Phone', email: 'Email', city: 'Town', zip: 'ZIP', within40: 'Within 40 min of Lakewood / Toms River', over21: 'At least 21', hasCdl: 'Holds CDL', cdlClass: 'CDL class', cdlState: 'License state', endorsements: 'Endorsements', cleanRecord: 'Clean driving record', recordExplain: 'Driving record explanation', experienceYears: 'School bus experience', lastEmployer: 'Most recent employer', otherExperience: 'Other passenger experience', positionType: 'Position wanted', startDate: 'Earliest start', reliableTransport: 'Reliable transportation', canPass: 'Able to pass', hearAbout: 'Heard about us', referral: 'Referred by', notes: 'Their message', consent: 'Consent', submittedFrom: 'Submitted from', license: 'License', next: 'Follow up on', adminNotes: 'Your notes', status: 'Stage' };
 const JOBS = ['Driver', 'Fleet technician']; const jobOf = (l) => l.job === 'Mechanic' ? 'Fleet technician' : JOBS.includes(l.job) ? l.job : 'Driver';
-const HIDDEN = new Set(['indeedId', 'notes', 'city', 'tracked', 'trackedAt', 'job', 'id', 'createdAt', 'updatedAt', 'status', 'next', 'adminNotes', 'license', 'source', 'type', 'fullName', 'phone', 'email', 'submittedFrom']);
+const HIDDEN = new Set(['indeedId', 'notes', 'city', 'tracked', 'trackedAt', 'job', 'via', 'id', 'createdAt', 'updatedAt', 'status', 'next', 'adminNotes', 'license', 'source', 'type', 'fullName', 'phone', 'email', 'submittedFrom']);
 const opts = (arr, sel) => arr.map((v) => `<option ${v === sel ? 'selected' : ''}>${esc(v)}</option>`).join('');
 $('l_source').innerHTML = opts(SOURCES, 'Facebook post'); $('l_cdl').innerHTML = opts(CDLS); $('l_stage').innerHTML = opts(STAGES, 'New');
 $('f_stage').insertAdjacentHTML('beforeend', opts(STAGES.concat(ACTIVE_STAGES.filter((x) => !STAGES.includes(x))))); $('f_source').insertAdjacentHTML('beforeend', opts(SOURCES));
@@ -679,7 +701,7 @@ function firstText(l) { const t = TPLS().find((x) => x.k === 'first'); return (t
 function phoneDigits(p) { let d = String(p || '').replace(/\D/g, ''); if (d.length === 10) d = '1' + d; return d; }
 function smsLink(l) { return `sms:+${phoneDigits(l.phone)}?&body=${encodeURIComponent(firstText(l))}`; }
 function leadWaLink(l) { return `https://wa.me/${phoneDigits(l.phone)}?text=${encodeURIComponent(firstText(l))}`; }
-function updateLocLines() { document.querySelectorAll('#leadList .ld, #activeList .ld').forEach((card) => { const l = leads.find((x) => x.id === card.dataset.id); const el = card.querySelector('.loc'); if (l && el) { const tmp = document.createElement('div'); tmp.innerHTML = locLine(l); el.replaceWith(tmp.firstElementChild); } }); }
+function updateLocLines() { document.querySelectorAll('#leadList .ld, #activeList .ld, #webList .ld').forEach((card) => { const l = leads.find((x) => x.id === card.dataset.id); const el = card.querySelector('.loc'); if (l && el) { const tmp = document.createElement('div'); tmp.innerHTML = locLine(l); el.replaceWith(tmp.firstElementChild); } }); }
 function locLine(l) {
   const label = townLabel(l); if (!label) return `<div class="loc unknown">📍 Town not provided</div>`;
   const g = geoFor(l);
@@ -736,6 +758,7 @@ function startListening() {
   unsubs.push(fs.onSnapshot(fs.doc(db, 'settings', 'company'), (snap) => { if (snap.exists()) { company = { ...DEFAULTS, ...snap.data() }; fillCompanyForm(); renderTemplates(); $('companyStatus').textContent = 'Loaded from the shared database.'; } }, () => {}));
   unsubs.push(fs.onSnapshot(fs.doc(db, 'settings', 'checklist'), (snap) => { if (snap.exists()) { checklist = snap.data().done || {}; renderSteps(); } }, () => {}));
   unsubs.push(fs.onSnapshot(fs.doc(db, 'settings', 'geo'), (snap) => { if (snap.exists()) { geoState.cache = { ...geoState.cache, ...(snap.data().towns2 || {}) }; if ($('leadList').querySelector('.ld')) updateLocLines(); else renderLeads(); } }, () => {}));
+  unsubs.push(fs.onSnapshot(fs.doc(db, 'settings', 'tracking'), (snap) => { if (snap.exists() && /^\d{4}-\d{2}-\d{2}$/.test(snap.data().webSince || '')) { webSince = snap.data().webSince; renderLeads(); } }, () => {}));
   unsubs.push(fs.onSnapshot(fs.doc(db, 'settings', 'routine'), (snap) => { if (snap.exists()) { const r = snap.data(); routine = { week: r.week || '', done: r.done || {} }; } renderRoutine(); }, () => {}));
 }
 function stopListening() { unsubs.forEach((u) => { try { u(); } catch (e) {} }); unsubs = []; }
@@ -746,7 +769,7 @@ function setSignedIn(user) {
   $('login').style.display = on ? 'none' : 'block';
   $('tabs').style.display = on ? 'flex' : 'none';
   $('logout').style.display = on ? 'inline-flex' : 'none';
-  ['leads', 'active', 'posts', 'setup', 'routine'].forEach((v) => $('view-' + v).classList.remove('on'));
+  ['leads', 'active', 'web', 'posts', 'setup', 'routine'].forEach((v) => $('view-' + v).classList.remove('on'));
   if (on) { let t = 'leads'; try { t = localStorage.getItem('wtg.tab') || 'leads'; } catch (e) {} showTab(t); stopListening(); startListening(); }
   else stopListening();
 }
@@ -770,7 +793,7 @@ function stageClass(l) { if (CLOSED.includes(l.status)) return 'cold'; const t =
 function licenseOf(l) { if (l.license) return l.license; if (l.hasCdl) { if (/^yes/i.test(l.hasCdl)) { const e = (l.endorsements || []).join(' '); return /P/.test(e) && /S/.test(e) ? 'Has CDL with P & S' : 'Has CDL, needs P/S'; } return 'No CDL, willing to train'; } return ''; }
 let renderPending = false;
 function renderLeads() {
-  const lists = [$('leadList'), $('activeList')]; const ae = document.activeElement;
+  const lists = [$('leadList'), $('activeList'), $('webList')]; const ae = document.activeElement;
   if (ae && lists.some((list) => list.contains(ae)) && /^(SELECT|INPUT|TEXTAREA)$/.test(ae.tagName)) { renderPending = true; return; }
   // Never redraw over unsaved typing: an open Details panel whose fields differ from what is stored waits for Save.
   const dirty = lists.some((list) => Array.from(list.querySelectorAll('.ld.open [data-f]')).some((el) => { const l = leads.find((x) => x.id === el.closest('.ld').dataset.id); return l && String(el.value || '').trim() !== String(l[el.dataset.f] || '').trim(); }));
@@ -781,13 +804,38 @@ function renderLeads() {
   lists.forEach((list, i) => openIds[i].forEach((id) => { const el = list.querySelector(`.ld[data-id="${id}"]`); if (el) el.classList.add('open'); }));
 }
 // When the user finishes with a dropdown or field, apply any render that was held back.
-document.addEventListener('focusout', (e) => { const inLists = (el) => el && ($('leadList').contains(el) || $('activeList').contains(el)); if (renderPending && inLists(e.target)) setTimeout(() => { if (renderPending) renderLeads(); }, 150); });
+document.addEventListener('focusout', (e) => { const inLists = (el) => el && ($('leadList').contains(el) || $('activeList').contains(el) || $('webList').contains(el)); if (renderPending && inLists(e.target)) setTimeout(() => { if (renderPending) renderLeads(); }, 150); });
+let webSince = '2026-11-22';
+function renderWeb(isDup) {
+  if ($('w_since') !== document.activeElement) $('w_since').value = webSince;
+  const dayOf = (l) => { const d = new Date(l.createdAt); return isNaN(d) ? '' : ymd(d); };
+  const isWeb = (l) => l.type === 'Driver application';
+  const isQuick = (l) => l.source === 'Indeed' && !isWeb(l);
+  const A = leads.filter((l) => isQuick(l) && dayOf(l) < webSince);
+  const B = leads.filter((l) => isWeb(l) && dayOf(l) >= webSince);
+  const C = leads.filter((l) => isQuick(l) && dayOf(l) >= webSince);
+  $('webCount').textContent = B.length;
+  const DAY = 86400000; const sinceD = new Date(webSince + 'T00:00:00');
+  const firstA = A.reduce((m, l) => (dayOf(l) && dayOf(l) < m ? dayOf(l) : m), webSince);
+  const wkA = Math.max((sinceD - new Date(firstA + 'T00:00:00')) / DAY, 1) / 7, wkB = Math.max((Date.now() - sinceD) / DAY, 1) / 7;
+  const reached = (l) => !['New', 'Left message', 'Never reached'].includes(l.status || 'New');
+  const wentActive = (l) => !!l.tracked || ['Interview / application', 'Fingerprint', 'Training', 'Road test', 'Hired'].includes(l.status);
+  const pc = (n, d) => (d ? `${n} <small>(${Math.round(n / d * 100)}%)</small>` : '0');
+  const col = (g, wk) => [String(g.length), g.length ? (g.length / wk).toFixed(1) : '0', pc(g.filter((l) => l.phone).length, g.length), pc(g.filter(reached).length, g.length), pc(g.filter((l) => l.status === 'Too far').length, g.length), pc(g.filter((l) => l.status === 'Never reached').length, g.length), pc(g.filter(wentActive).length, g.length), pc(g.filter((l) => l.status === 'Hired').length, g.length)];
+  const a = col(A, wkA), b = col(B, wkB), c = col(C, wkB);
+  const names = ['Applicants', 'Per week', 'Gave a phone number', 'Reached (you spoke)', 'Too far', 'Never reached', 'Moved to Active', 'Hired'];
+  const nice = new Date(webSince + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const viaIndeed = B.filter((l) => String(l.via || '').toLowerCase() === 'indeed').length;
+  $('webCompare').innerHTML = `<div class="cmpwrap"><table class="cmp"><thead><tr><th></th><th>Indeed quick apply<br>before ${nice}</th><th class="hl">Website application<br>since ${nice}</th><th>Indeed quick apply<br>since ${nice}</th></tr></thead><tbody>${names.map((n, i) => `<tr><td>${n}</td><td>${a[i]}</td><td class="hl">${b[i]}</td><td>${c[i]}</td></tr>`).join('')}</tbody></table></div><p class="note" style="margin-top:8px">${B.length ? `${viaIndeed} of the ${B.length} website applicants came through the Indeed link.` : 'Nothing has come in through the website since this date yet.'} The percentages get meaningful after about 15 to 20 applicants.</p>`;
+  const rowsW = B.slice().sort((x, y) => (y.createdAt || '').localeCompare(x.createdAt || ''));
+  $('webList').innerHTML = rowsW.length ? rowsW.map((l) => cardHtml(l, isDup)).join('') : '<div class="empty">No website applications yet since that date.</div>';
+}
 function renderLeadsNow() {
   const q = $('f_q').value.trim().toLowerCase(), ft = $('f_type').value, fs_ = $('f_stage').value, fsrc = $('f_source').value, fjob = $('f_job').value, sort = $('f_sort').value;
   const t = today(), wk = weekStart();
   const open = leads.filter((l) => !CLOSED.includes(l.status));
   $('leadCount').textContent = open.filter((l) => !l.tracked).length;
-  $('stats').innerHTML = [['Open leads', open.filter((l) => !l.tracked).length], ['Active', open.filter((l) => l.tracked).length], ['Due today', open.filter((l) => l.next && l.next <= t).length], ['New this week', leads.filter((l) => (l.createdAt || '').slice(0, 10) >= wk).length], ['Inquiries', leads.filter((l) => l.type === 'Service inquiry').length], ['In training', leads.filter((l) => l.status === 'Paperwork / training' || l.status === 'Training').length], ['Hired', leads.filter((l) => l.status === 'Hired').length]].map(([k, v]) => `<div class="stat"><b>${v}</b><span>${k}</span></div>`).join('');
+  $('stats').innerHTML = [['All time', leads.length], ['Open leads', open.filter((l) => !l.tracked).length], ['Active', open.filter((l) => l.tracked).length], ['Due today', open.filter((l) => l.next && l.next <= t).length], ['New this week', leads.filter((l) => (l.createdAt || '').slice(0, 10) >= wk).length], ['Inquiries', leads.filter((l) => l.type === 'Service inquiry').length], ['In training', leads.filter((l) => l.status === 'Paperwork / training' || l.status === 'Training').length], ['Hired', leads.filter((l) => l.status === 'Hired').length]].map(([k, v]) => `<div class="stat"><b>${v}</b><span>${k}</span></div>`).join('');
   const seen = {}; const norm = (v) => String(v || '').toLowerCase().replace(/[^a-z0-9]/g, '');
   leads.forEach((l) => { const n = norm(l.fullName), p = norm(l.phone), e = norm(l.email); if (n) seen['n' + n] = (seen['n' + n] || 0) + 1; if (p) seen['p' + p] = (seen['p' + p] || 0) + 1; if (e) seen['e' + e] = (seen['e' + e] || 0) + 1; });
   const isDup = (l) => (seen['n' + norm(l.fullName)] > 1) || (norm(l.phone) && seen['p' + norm(l.phone)] > 1) || (norm(l.email) && seen['e' + norm(l.email)] > 1);
@@ -796,6 +844,7 @@ function renderLeadsNow() {
   const addedAt = (l) => l.trackedAt || tsIso(l.updatedAt) || tsIso(l.createdAt) || ''; const aq = $('a_q').value.trim().toLowerCase(); const active = leads.filter((l) => l.tracked && (!aq || [l.fullName, l.phone, l.email, l.city, l.notes, l.adminNotes, l.status].join(' ').toLowerCase().includes(aq))).sort((a, b) => addedAt(b).localeCompare(addedAt(a)));
   $('activeCount').textContent = leads.filter((l) => l.tracked).length;
   $('activeList').innerHTML = active.length ? active.map((l) => cardHtml(l, isDup)).join('') : `<div class="empty">${aq ? 'No one on Active matches that search.' : 'Nothing here yet. Open Leads and tap Move to Active on anyone worth following up.'}</div>`;
+  renderWeb(isDup);
   if (!rows.length) { $('leadList').innerHTML = `<div class="empty">${leads.length ? 'No leads match these filters. People you moved to Active are on the Active tab.' : 'No leads yet. Website applications show up here automatically. Add anyone else with the form above.'}</div>`; return; }
   $('leadList').innerHTML = rows.map((l) => cardHtml(l, isDup)).join('');
 }
@@ -808,7 +857,7 @@ function cardHtml(l, isDup) {
       <div><div class="who">${esc(l.fullName || '(no name)')}</div>
       ${locLine(l)}
       ${l.phone ? `<div class="tel">📞 <span class="num" title="Click to select the number">${esc(l.phone)}</span> <a class="btn sm" href="${smsLink(l)}">Text</a> <a class="btn outline sm" href="${leadWaLink(l)}" target="_blank" rel="noopener">WhatsApp</a></div>` : `<div class="tel none">📞 No phone${l.source === 'Indeed' ? ' (see Indeed)' : ''}</div>`}
-      <div class="meta"><span class="chip ${jobOf(l) === 'Fleet technician' ? 'mech' : 'drv'}">${jobOf(l)}</span><span class="chip type ${type === 'Service inquiry' ? 'inq' : type === 'Lead' ? 'lead' : ''}">${esc(type)}</span><span class="chip">${esc(l.source || 'Website')}</span>${isDup(l) ? '<span class="chip dup">Possible duplicate</span>' : ''}${lic ? `<span class="chip">${esc(lic)}</span>` : ''}${l.organization ? `<span>${esc(l.organization)}</span>` : ''}<span>${fmt(l.createdAt)}</span>${l.next ? `<span>Follow up ${esc(l.next)}${l.next <= t && !closed ? ' (due)' : ''}</span>` : ''}</div></div>
+      <div class="meta"><span class="chip ${jobOf(l) === 'Fleet technician' ? 'mech' : 'drv'}">${jobOf(l)}</span><span class="chip type ${type === 'Service inquiry' ? 'inq' : type === 'Lead' ? 'lead' : ''}">${esc(type)}</span><span class="chip">${esc(l.source || 'Website')}</span>${l.via ? `<span class="chip via">via ${esc(String(l.via).replace(/^./, (c) => c.toUpperCase()))}</span>` : ''}${isDup(l) ? '<span class="chip dup">Possible duplicate</span>' : ''}${lic ? `<span class="chip">${esc(lic)}</span>` : ''}${l.organization ? `<span>${esc(l.organization)}</span>` : ''}<span>${fmt(l.createdAt)}</span>${l.next ? `<span>Follow up ${esc(l.next)}${l.next <= t && !closed ? ' (due)' : ''}</span>` : ''}</div></div>
       <div class="ctl"><select data-stage="${l.id}">${opts(l.tracked ? ACTIVE_STAGES : STAGES, l.status || (l.tracked ? ACTIVE_STAGES[0] : 'New'))}</select><button class="btn outline sm" data-open="${l.id}" type="button">Details</button><button class="btn ${l.tracked ? 'green' : 'blue'} sm" data-track="${l.id}" type="button">${l.tracked ? 'Back to Leads' : 'Move to Active'}</button>${l.indeedId ? `<a class="btn outline sm" href="https://account.indeed.com/o/myaccess/switch/confirm?employerId=1fb47a09cf9a8c0a7b43cc05a95deb64&continue=https%3A%2F%2Femployers.indeed.com%2Fcandidates%2Fview%3Fid%3D${esc(l.indeedId)}" target="_blank" rel="noopener">Open in Indeed</a>` : l.source === 'Indeed' ? `<a class="btn outline sm" href="https://employers.indeed.com/candidates?id=dc4de1264186&statusName=All" target="_blank" rel="noopener">Find in Indeed</a>` : ''}</div>
       ${cleanNotes(l) ? `<div class="notes">${linkify(cleanNotes(l))}</div>` : ''}
       <div class="more">
@@ -827,10 +876,11 @@ function cardHtml(l, isDup) {
         <span class="confirm" data-confirm="${l.id}">Delete ${esc(l.fullName || 'this lead')}? <button class="btn danger sm" data-delyes="${l.id}" type="button">Yes, delete</button><button class="btn outline sm" data-delno="${l.id}" type="button">Keep</button></span></div>
       </div></div>`; }
 }
+$('w_since').addEventListener('change', async (e) => { const v = e.target.value; if (!/^\d{4}-\d{2}-\d{2}$/.test(v)) return; webSince = v; e.target.blur(); renderLeads(); try { await fs.setDoc(fs.doc(db, 'settings', 'tracking'), { webSince: v }, { merge: true }); toast('Saved'); } catch (err) { toast('Could not save. ' + friendlyError(err)); } });
 ['f_q', 'f_type', 'f_stage', 'f_job', 'f_source', 'f_sort', 'a_q'].forEach((id) => $(id).addEventListener('input', renderLeads));
 const tsIso = (v) => !v ? '' : typeof v === 'string' ? v : typeof v.toDate === 'function' ? v.toDate().toISOString() : v.seconds ? new Date(v.seconds * 1000).toISOString() : '';
 async function patchLead(id, patch) { try { await fs.updateDoc(docRef(id), { ...patch, updatedAt: fs.serverTimestamp() }); toast('Saved'); } catch (e) { toast('Could not save. ' + friendlyError(e)); } }
-[$('leadList'), $('activeList')].forEach((list) => {
+[$('leadList'), $('activeList'), $('webList')].forEach((list) => {
 list.addEventListener('change', (e) => { const id = e.target.dataset.stage; if (!id) return; const patch = { status: e.target.value }; if (!CLOSED.includes(e.target.value)) patch.next = addDays(2); e.target.blur(); patchLead(id, patch); });
 list.addEventListener('click', async (e) => {
   const b = e.target.closest('button'); if (!b) return; const d = b.dataset;
