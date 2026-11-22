@@ -75,6 +75,7 @@
     .ld .tel .num { user-select: all; -webkit-user-select: all; cursor: text; padding: 1px 4px; border-radius: 4px; background: #f4f6f8; }
     .ld .tel .btn { margin-left: 6px; padding: 4px 10px; font-size: .85rem; vertical-align: middle; }
     .ld .tel.none { color: var(--muted); font-weight: 500; }
+    .ld .tel .texted { margin-left: 8px; font-size: .8rem; font-weight: 700; color: var(--green); white-space: nowrap; }
     .ld .notes a, .ld .kv a { overflow-wrap: anywhere; word-break: break-word; }
     .ld, .ld .notes, .ld .kv { min-width: 0; overflow-wrap: anywhere; }
     .ld .meta { display: flex; gap: 6px; flex-wrap: wrap; font-size: .85rem; color: var(--muted); margin-top: 4px; align-items: center; }
@@ -162,7 +163,7 @@
 <header class="topbar">
   <div class="wrap">
     <a class="logo" href="index.html"><img class="mark" src="img/bus.png" alt="" width="172" height="123"><span class="word">WAY<em>To</em>GO</span><span class="title">Recruiting hub</span></a>
-    <span id="hubver" title="Hub version" style="font-size:.75rem;color:#888;align-self:center">v11.22a</span>
+    <span id="hubver" title="Hub version" style="font-size:.75rem;color:#888;align-self:center">v11.22b</span>
     <button class="btn outline" id="logout" style="display:none">Log out</button>
     <nav class="tabs" id="tabs" role="tablist" style="display:none">
       <button role="tab" data-tab="leads" aria-selected="true">Leads<span class="n" id="leadCount">0</span></button>
@@ -385,7 +386,7 @@ const CLOSED = ['Hired', 'Not now', 'Too far', 'Never reached', 'License denied'
 const ACTIVE_STAGES = ['Insurance pending', 'Interview / application', 'Fingerprint', 'Training', 'Road test'];
 const LABELS = { type: 'Type', source: 'Source', fullName: 'Full name', organization: 'Organization', phone: 'Phone', email: 'Email', city: 'Town', zip: 'ZIP', within40: 'Within 40 min of Lakewood / Toms River', over21: 'At least 21', hasCdl: 'Holds CDL', cdlClass: 'CDL class', cdlState: 'License state', endorsements: 'Endorsements', cleanRecord: 'Clean driving record', recordExplain: 'Driving record explanation', experienceYears: 'School bus experience', lastEmployer: 'Most recent employer', otherExperience: 'Other passenger experience', positionType: 'Position wanted', startDate: 'Earliest start', reliableTransport: 'Reliable transportation', canPass: 'Able to pass', hearAbout: 'Heard about us', referral: 'Referred by', notes: 'Their message', consent: 'Consent', submittedFrom: 'Submitted from', license: 'License', next: 'Follow up on', adminNotes: 'Your notes', status: 'Stage' };
 const JOBS = ['Driver', 'Fleet technician']; const jobOf = (l) => l.job === 'Mechanic' ? 'Fleet technician' : JOBS.includes(l.job) ? l.job : 'Driver';
-const HIDDEN = new Set(['indeedId', 'notes', 'city', 'tracked', 'trackedAt', 'job', 'via', 'id', 'createdAt', 'updatedAt', 'status', 'next', 'adminNotes', 'license', 'source', 'type', 'fullName', 'phone', 'email', 'submittedFrom']);
+const HIDDEN = new Set(['indeedId', 'notes', 'city', 'tracked', 'trackedAt', 'job', 'via', 'textedAt', 'id', 'createdAt', 'updatedAt', 'status', 'next', 'adminNotes', 'license', 'source', 'type', 'fullName', 'phone', 'email', 'submittedFrom']);
 const opts = (arr, sel) => arr.map((v) => `<option ${v === sel ? 'selected' : ''}>${esc(v)}</option>`).join('');
 $('l_source').innerHTML = opts(SOURCES, 'Facebook post'); $('l_cdl').innerHTML = opts(CDLS); $('l_stage').innerHTML = opts(STAGES, 'New');
 $('f_stage').insertAdjacentHTML('beforeend', opts(STAGES.concat(ACTIVE_STAGES.filter((x) => !STAGES.includes(x))))); $('f_source').insertAdjacentHTML('beforeend', opts(SOURCES));
@@ -481,8 +482,8 @@ Questions? Call or text ${C('phone')}.
 `Way To Go NJ is hiring CDL school bus drivers in Toms River. ${C('pay')}. Minimum hours guaranteed. ${C('cdl')} Reply to this message or ${C('phone') ? 'call ' + C('phone') : 'call us'} and we will get you started this week. Please forward to anyone looking for steady work. 🚌` },
   { k: 'dm', title: 'Direct message to a prospect (cold)', where: 'Someone who commented, liked, or is in a drivers group.', text:
 `Hi [NAME], this is ${C('contact') ? C('contact').replace(/^Ask for /i, '') : 'the hiring team'} from Way To Go NJ in Toms River. We are hiring CDL school bus drivers, ${C('pay')}. ${C('cdl')} Would you be open to a 5-minute call this week? What time works for you?` },
-  { k: 'first', title: 'First text (right after they apply)', where: 'Within the hour. Text before you call; most people do not pick up unknown numbers.', text:
-`Hi [NAME], this is ${C('contact') ? C('contact').replace(/^Ask for /i, '') : 'Jay'} from Way To Go NJ. I saw your application for the school bus driver job. Quick question: do you have a CDL, or would you want our free training? Reply here and I will get you set up. ${C('phone')}` },
+  { k: 'first', title: 'First text (right after they apply)', where: 'This is what the Text and WhatsApp buttons on every lead send. It asks them to finish the 5-minute website application; the ones who do show on the Website tab.', text:
+`Hi [NAME], this is ${C('contact') ? C('contact').replace(/^Ask for /i, '') : 'Jay'} from Way To Go NJ. Thanks for applying for the school bus driver job. The next step is our short application, it takes 5 minutes: ${APPLY_URL}?src=text Once it is in, I will call you to set up an interview. ${C('phone')}` },
   { k: 'follow', title: 'Follow-up text (lead went quiet)', where: '3 days after first contact, then once more a week later.', text:
 `Hi [NAME], Way To Go NJ here. Still have a route open near you, ${C('pay')}. Want me to hold it for you while you decide? Reply YES and I will send the next step, or apply at ${APPLY_URL}. ${C('phone') ? '- ' + C('phone') : ''}` },
   { k: 'ref', title: 'Referral text to current drivers', where: 'Every Thursday to your whole driver list.', text:
@@ -697,7 +698,15 @@ async function runGeoQueue() {
   }
   geoState.busy = false;
 }
-function firstText(l) { const t = TPLS().find((x) => x.k === 'first'); return (t ? t.text : '').replace('[NAME]', (l.fullName || '').split(' ')[0] || 'there'); }
+function firstText(l) {
+  const raw = (l.fullName || '').trim().split(/\s+/)[0] || ''; const first = raw ? raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase() : 'there';
+  const me = C('contact') ? C('contact').replace(/^Ask for /i, '') : 'Jay';
+  // Already filled out the website application: no link, just set up the call.
+  if (l.type === 'Driver application') return `Hi ${first}, this is ${me} from Way To Go NJ. I got your application, thank you. When is a good time today or tomorrow for a quick call? ${C('phone')}`;
+  if (jobOf(l) === 'Fleet technician') return `Hi ${first}, this is ${me} from Way To Go NJ. Thanks for applying for the fleet technician job. When is a good time today or tomorrow for a quick call? ${C('phone')}`;
+  const t = TPLS().find((x) => x.k === 'first'); const src = String(l.source || 'text').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'text';
+  return (t ? t.text : '').replace('[NAME]', first).replace('?src=text', '?src=' + src);
+}
 function phoneDigits(p) { let d = String(p || '').replace(/\D/g, ''); if (d.length === 10) d = '1' + d; return d; }
 function smsLink(l) { return `sms:+${phoneDigits(l.phone)}?&body=${encodeURIComponent(firstText(l))}`; }
 function leadWaLink(l) { return `https://wa.me/${phoneDigits(l.phone)}?text=${encodeURIComponent(firstText(l))}`; }
@@ -856,7 +865,7 @@ function cardHtml(l, isDup) {
     return `<div class="ld ${stageClass(l)}" data-id="${l.id}">
       <div><div class="who">${esc(l.fullName || '(no name)')}</div>
       ${locLine(l)}
-      ${l.phone ? `<div class="tel">📞 <span class="num" title="Click to select the number">${esc(l.phone)}</span> <a class="btn sm" href="${smsLink(l)}">Text</a> <a class="btn outline sm" href="${leadWaLink(l)}" target="_blank" rel="noopener">WhatsApp</a></div>` : `<div class="tel none">📞 No phone${l.source === 'Indeed' ? ' (see Indeed)' : ''}</div>`}
+      ${l.phone ? `<div class="tel">📞 <span class="num" title="Click to select the number">${esc(l.phone)}</span> <a class="btn sm" href="${smsLink(l)}" data-texted="${l.id}">Text</a> <a class="btn outline sm" href="${leadWaLink(l)}" target="_blank" rel="noopener" data-texted="${l.id}">WhatsApp</a>${l.textedAt ? ` <span class="texted">✓ Texted ${new Date(l.textedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>` : ''}</div>` : `<div class="tel none">📞 No phone${l.source === 'Indeed' ? ' (see Indeed)' : ''}</div>`}
       <div class="meta"><span class="chip ${jobOf(l) === 'Fleet technician' ? 'mech' : 'drv'}">${jobOf(l)}</span><span class="chip type ${type === 'Service inquiry' ? 'inq' : type === 'Lead' ? 'lead' : ''}">${esc(type)}</span><span class="chip">${esc(l.source || 'Website')}</span>${l.via ? `<span class="chip via">via ${esc(String(l.via).replace(/^./, (c) => c.toUpperCase()))}</span>` : ''}${isDup(l) ? '<span class="chip dup">Possible duplicate</span>' : ''}${lic ? `<span class="chip">${esc(lic)}</span>` : ''}${l.organization ? `<span>${esc(l.organization)}</span>` : ''}<span>${fmt(l.createdAt)}</span>${l.next ? `<span>Follow up ${esc(l.next)}${l.next <= t && !closed ? ' (due)' : ''}</span>` : ''}</div></div>
       <div class="ctl"><select data-stage="${l.id}">${opts(l.tracked ? ACTIVE_STAGES : STAGES, l.status || (l.tracked ? ACTIVE_STAGES[0] : 'New'))}</select><button class="btn outline sm" data-open="${l.id}" type="button">Details</button><button class="btn ${l.tracked ? 'green' : 'blue'} sm" data-track="${l.id}" type="button">${l.tracked ? 'Back to Leads' : 'Move to Active'}</button>${l.indeedId ? `<a class="btn outline sm" href="https://account.indeed.com/o/myaccess/switch/confirm?employerId=1fb47a09cf9a8c0a7b43cc05a95deb64&continue=https%3A%2F%2Femployers.indeed.com%2Fcandidates%2Fview%3Fid%3D${esc(l.indeedId)}" target="_blank" rel="noopener">Open in Indeed</a>` : l.source === 'Indeed' ? `<a class="btn outline sm" href="https://employers.indeed.com/candidates?id=dc4de1264186&statusName=All" target="_blank" rel="noopener">Find in Indeed</a>` : ''}</div>
       ${cleanNotes(l) ? `<div class="notes">${linkify(cleanNotes(l))}</div>` : ''}
@@ -883,6 +892,7 @@ async function patchLead(id, patch) { try { await fs.updateDoc(docRef(id), { ...
 [$('leadList'), $('activeList'), $('webList')].forEach((list) => {
 list.addEventListener('change', (e) => { const id = e.target.dataset.stage; if (!id) return; const patch = { status: e.target.value }; if (!CLOSED.includes(e.target.value)) patch.next = addDays(2); e.target.blur(); patchLead(id, patch); });
 list.addEventListener('click', async (e) => {
+  const sent = e.target.closest('a[data-texted]'); if (sent) { fs.updateDoc(docRef(sent.dataset.texted), { textedAt: new Date().toISOString(), updatedAt: fs.serverTimestamp() }).catch(() => {}); return; }
   const b = e.target.closest('button'); if (!b) return; const d = b.dataset;
   if (d.open) { b.closest('.ld').classList.toggle('open'); if (renderPending) renderLeads(); return; }
   if (d.track) { const l = leads.find((x) => x.id === d.track) || {}; const toActive = !l.tracked; const patch = { tracked: toActive, trackedAt: toActive ? new Date().toISOString() : null }; if (toActive) { patch.status = ACTIVE_STAGES[0]; patch.next = addDays(2); } if (!toActive && ACTIVE_STAGES.includes(l.status) && !STAGES.includes(l.status)) patch.status = 'Interested'; patchLead(d.track, patch); return; }
