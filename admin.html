@@ -163,7 +163,7 @@
 <header class="topbar">
   <div class="wrap">
     <a class="logo" href="index.html"><img class="mark" src="img/bus.png" alt="" width="172" height="123"><span class="word">WAY<em>To</em>GO</span><span class="title">Recruiting hub</span></a>
-    <span id="hubver" title="Hub version" style="font-size:.75rem;color:#888;align-self:center">v11.22c</span>
+    <span id="hubver" title="Hub version" style="font-size:.75rem;color:#888;align-self:center">v11.22d</span>
     <button class="btn outline" id="logout" style="display:none">Log out</button>
     <nav class="tabs" id="tabs" role="tablist" style="display:none">
       <button role="tab" data-tab="leads" aria-selected="true">Leads<span class="n" id="leadCount">0</span></button>
@@ -380,7 +380,7 @@ tabs.forEach((b) => b.addEventListener('click', () => showTab(b.dataset.tab)));
 /* ---------- constants ---------- */
 const SOURCES = ['Website', 'Indeed', 'ZipRecruiter', 'Facebook post', 'Facebook group', 'Instagram', 'WhatsApp', 'Referral', 'Flyer / QR', 'Craigslist', 'LinkedIn', 'Nextdoor', 'Google', 'One-Stop', 'Walk-in / call', 'Other'];
 const CDLS = ['Unknown', 'No CDL, willing to train', 'Has CDL, needs P/S', 'Has CDL with P & S'];
-const STAGES = ['New', 'Left message', 'Contacted', 'Interested', 'Interview set', 'Paperwork / training', 'Insurance pending', 'Hired', 'Not now', 'Too far', 'Never reached', 'License denied'];
+const STAGES = ['New', 'Texted', 'Left message', 'Contacted', 'Interested', 'Interview set', 'Paperwork / training', 'Insurance pending', 'Hired', 'Not now', 'Too far', 'Never reached', 'License denied'];
 const CLOSED = ['Hired', 'Not now', 'Too far', 'Never reached', 'License denied'];
 // Stages used only on the Active tab, in order. Moving a lead to Active puts them at the first one.
 const ACTIVE_STAGES = ['Insurance pending', 'Interview / application', 'Fingerprint', 'Training', 'Road test'];
@@ -829,7 +829,7 @@ function renderWeb(isDup) {
   const DAY = 86400000; const sinceD = new Date(webSince + 'T00:00:00');
   const firstA = A.reduce((m, l) => (dayOf(l) && dayOf(l) < m ? dayOf(l) : m), webSince);
   const wkA = Math.max((sinceD - new Date(firstA + 'T00:00:00')) / DAY, 1) / 7, wkB = Math.max((Date.now() - sinceD) / DAY, 1) / 7;
-  const reached = (l) => !['New', 'Left message', 'Never reached'].includes(l.status || 'New');
+  const reached = (l) => !['New', 'Texted', 'Left message', 'Never reached'].includes(l.status || 'New');
   const wentActive = (l) => !!l.tracked || ['Interview / application', 'Fingerprint', 'Training', 'Road test', 'Hired'].includes(l.status);
   const pc = (n, d) => (d ? `${n} <small>(${Math.round(n / d * 100)}%)</small>` : '0');
   const col = (g, wk) => [String(g.length), g.length ? (g.length / wk).toFixed(1) : '0', pc(g.filter((l) => l.phone).length, g.length), pc(g.filter(reached).length, g.length), pc(g.filter((l) => l.status === 'Too far').length, g.length), pc(g.filter((l) => l.status === 'Never reached').length, g.length), pc(g.filter(wentActive).length, g.length), pc(g.filter((l) => l.status === 'Hired').length, g.length)];
@@ -896,7 +896,7 @@ list.addEventListener('change', (e) => { const id = e.target.dataset.stage; if (
 list.addEventListener('click', async (e) => {
   const sent = e.target.closest('a[data-texted]');
   if (sent) {
-    const l = leads.find((x) => x.id === sent.dataset.texted); const mark = () => fs.updateDoc(docRef(sent.dataset.texted), { textedAt: new Date().toISOString(), updatedAt: fs.serverTimestamp() }).catch(() => {});
+    const l = leads.find((x) => x.id === sent.dataset.texted); const mark = () => { const patch = { textedAt: new Date().toISOString(), updatedAt: fs.serverTimestamp() }; if (l && (!l.status || l.status === 'New')) patch.status = 'Texted'; if (l && !l.tracked && !CLOSED.includes(l.status)) patch.next = addDays(2); return fs.updateDoc(docRef(sent.dataset.texted), patch).catch(() => {}); };
     if (!IS_PHONE && l && sent.getAttribute('href').startsWith('sms:')) {
       e.preventDefault();
       if (textStep.id !== l.id) { document.querySelectorAll('a[data-texted]').forEach((a) => { if (a.getAttribute('href').startsWith('sms:')) a.textContent = 'Text'; }); textStep = { id: l.id }; const d = String(l.phone || '').replace(/\D/g, ''); await copyText(d.length >= 10 ? d.slice(-10) : l.phone); document.querySelectorAll(`a[data-texted="${l.id}"]`).forEach((a) => { if (a.getAttribute('href').startsWith('sms:')) a.textContent = 'Copy message'; }); toast('Number copied. Paste it in the To box, then click Copy message.', 5000); }
